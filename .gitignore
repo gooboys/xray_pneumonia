@@ -1,2 +1,6 @@
 /ChestXray2017
+/NormalizedXRays
+*.csv
+*.jpeg
 test.py
+*.pth

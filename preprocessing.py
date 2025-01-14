@@ -133,7 +133,7 @@ def image_path_labeller(positive_train_folder, negative_train_folder, positive_t
                     # Append the data
                     image_data.append({
                         "Path": image_path,
-                        "Label": label,
+                        "Labels": label,
                         "Mean": mean_pixel_value,
                         "Stdev": stdev_pixel_value,
                         "Height": height,
@@ -189,8 +189,8 @@ def normalize_all(csv_file, target_contrast, target_brightness, normalized_folde
     
     # Create and save the new DataFrame with image paths and the second column
     df_output = pd.DataFrame({
-        'Image Paths': image_paths,
-        'Second Column': df_input.iloc[:, 1]  # Add second column from input
+        'Paths': image_paths,
+        'Labels': df_input.iloc[:, 1]  # Add second column from input
     })
     df_output.to_csv(output_csv, index=False)
     print(f"Normalization complete. CSV file created at {output_csv}")

@@ -5,3 +5,4 @@
 test.py
 *.pth
 /__pycache__
+*.txt

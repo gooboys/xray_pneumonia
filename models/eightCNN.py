@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-class standardCNN(nn.Module):
+class eightCNN(nn.Module):
     def __init__(self):
-        super(standardCNN, self).__init__()
+        super(eightCNN, self).__init__()
        
         # Convolutional layers
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3)  # Input is grayscale (1 channel)
@@ -17,9 +17,15 @@ class standardCNN(nn.Module):
        
         # Fully connected layers
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(30 * 30 * 128, 128)  # Flattened size from last pooling layer
-        self.dropout = nn.Dropout(p=0.5)
-        self.fc2 = nn.Linear(128, 3)  # Output layer for 3 classes
+        self.fc1 = nn.Linear(30 * 30 * 128, 2048)  # Flattened size from last pooling layer
+        self.dropout1 = nn.Dropout(p=0.5)
+        self.fc2 = nn.Linear(2048, 512)  # Output layer for 3 classes
+        self.dropout2 = nn.Dropout(p=0.5)
+        self.fc3 = nn.Linear(512, 128)
+        self.dropout3 = nn.Dropout(p=0.5)
+        self.fc4 = nn.Linear(128, 32)
+        self.dropout4 = nn.Dropout(p=0.5)
+        self.fc5 = nn.Linear(32, 3)
        
     def forward(self, x):
         # Forward pass through convolutional and pooling layers
@@ -27,9 +33,21 @@ class standardCNN(nn.Module):
         x = self.pool2(F.relu(self.conv2(x)))
         x = self.pool3(F.relu(self.conv3(x)))
        
-        # Flatten and pass through fully connected layers
+        # Flatten the output from the convolutional layers
         x = self.flatten(x)
+        
+        # Fully connected layers with ReLU activation and dropout
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = self.fc2(x)
+        x = self.dropout1(x)
+        
+        x = F.relu(self.fc2(x))
+        x = self.dropout2(x)
+        
+        x = F.relu(self.fc3(x))
+        x = self.dropout3(x)
+        
+        x = F.relu(self.fc4(x))
+        x = self.dropout4(x)
+        
+        x = self.fc5(x)
         return x

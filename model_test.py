@@ -9,13 +9,23 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import standardCNN
+from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, eightCNN, nineCNN, tenCNN
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 CNN = standardCNN
+onCNN = oneCNN
+twCNN = twoCNN
+threCNN = threeCNN
+fouCNN = fourCNN
+fivCNN = fiveCNN
+siCNN = sixCNN
+seveCNN = sevenCNN
+eighCNN = eightCNN
+ninCNN = nineCNN
+teCNN = tenCNN
 
 def train_test_split(file_path,test_size):
     # Load the data
@@ -59,7 +69,7 @@ class ImageDataset(Dataset):
 
         return image, label
 
-def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, plot=False):
+def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit, plot=False):
     train_loss_all = []
     val_loss_all = []
     train_accuracy_all = []
@@ -92,6 +102,8 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
 
         val_dataset = ImageDataset(val_data, transform=transform)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+        counter = 0
 
         for epoch in range(num_epochs):
             # Training
@@ -149,6 +161,10 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
                 best_val_loss = avg_val_loss
                 best_model = model_class().to(device)
                 best_model.load_state_dict(model.state_dict())
+                counter = 0
+            if counter > limit:
+                break
+            counter += 1
 
         # Append split results
         train_loss_all.append(train_losses)
@@ -251,18 +267,27 @@ if __name__ == "__main__":
     # Initialize other parameters
     criterion = nn.CrossEntropyLoss()
     optimizer_class = torch.optim.Adam
-
-    models = [CNN]
-    model_names = ["standard CNN"]
-
-    # Zip the two lists together
-    model_pairs = list(zip(model_names, models))
+    limit = 3
 
     txt_file = "model_reports.txt"
 
-    for name, model in model_pairs:
-        report = montecarlo(model, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform)
-        with open(txt_file, "a") as file:
-            file.write(name + ":\n")
-            file.write(report)
-            file.write("\n\n")
+    report = montecarlo(CNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    with open(txt_file, "a") as file:
+        file.write("standard CNN" + ":\n")
+        file.write(report)
+        file.write("\n")
+
+    # models = [CNN, onCNN, twCNN, threCNN, fouCNN, fivCNN, siCNN, seveCNN, eighCNN, ninCNN, teCNN]
+    # model_names = ["standard CNN","oneCNN", "twoCNN", "threeCNN", "fourCNN", "fiveCNN", "sixCNN", "sevenCNN", "eightCNN", "nineCNN", "tenCNN"]
+
+    # # Zip the two lists together
+    # model_pairs = list(zip(model_names, models))
+
+    # txt_file = "model_reports.txt"
+
+    # for name, model in model_pairs:
+    #     report = montecarlo(model, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    #     with open(txt_file, "a") as file:
+    #         file.write(name + ":\n")
+    #         file.write(report)
+    #         file.write("\n")

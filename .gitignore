@@ -4,3 +4,4 @@
 *.jpeg
 test.py
 *.pth
+/__pycache__

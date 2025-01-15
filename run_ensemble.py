@@ -22,7 +22,7 @@ def run_it(ensemble):
     cont1 = True
     while cont1:
         if image_path.isdigit():
-            if int(image_path)<5586:  
+            if int(image_path)<5856:  
                 cont1 = False
             else:
                 print("That doesn't seem to be an integer or an image we posses")

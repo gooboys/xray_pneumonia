@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, eightCNN, nineCNN, tenCNN
+from models import standardCNN, oneCNN, twoCNN, threeCNN
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -19,13 +19,7 @@ CNN = standardCNN
 onCNN = oneCNN
 twCNN = twoCNN
 threCNN = threeCNN
-fouCNN = fourCNN
-fivCNN = fiveCNN
-siCNN = sixCNN
-seveCNN = sevenCNN
-eighCNN = eightCNN
-ninCNN = nineCNN
-teCNN = tenCNN
+
 
 def train_test_split(file_path,test_size):
     # Load the data
@@ -259,9 +253,9 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 1
+    num_splits = 10
     train_size = 0.9
-    num_epochs = 1
+    num_epochs = 13
     batch_size = 32
     
     # Initialize other parameters
@@ -271,23 +265,20 @@ if __name__ == "__main__":
 
     txt_file = "model_reports.txt"
 
-    report = montecarlo(CNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    report = montecarlo(onCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
     with open(txt_file, "a") as file:
-        file.write("standard CNN" + ":\n")
+        file.write("oneCNN" + ":\n")
         file.write(report)
         file.write("\n")
 
-    # models = [CNN, onCNN, twCNN, threCNN, fouCNN, fivCNN, siCNN, seveCNN, eighCNN, ninCNN, teCNN]
-    # model_names = ["standard CNN","oneCNN", "twoCNN", "threeCNN", "fourCNN", "fiveCNN", "sixCNN", "sevenCNN", "eightCNN", "nineCNN", "tenCNN"]
+    # report = montecarlo(twCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    # with open(txt_file, "a") as file:
+    #     file.write("twoCNN" + ":\n")
+    #     file.write(report)
+    #     file.write("\n")
 
-    # # Zip the two lists together
-    # model_pairs = list(zip(model_names, models))
-
-    # txt_file = "model_reports.txt"
-
-    # for name, model in model_pairs:
-    #     report = montecarlo(model, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-    #     with open(txt_file, "a") as file:
-    #         file.write(name + ":\n")
-    #         file.write(report)
-    #         file.write("\n")
+    # report = montecarlo(threCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    # with open(txt_file, "a") as file:
+    #     file.write("threeCNN" + ":\n")
+    #     file.write(report)
+    #     file.write("\n")

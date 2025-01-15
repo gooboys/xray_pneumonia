@@ -21,7 +21,7 @@ class threeCNN(nn.Module):
         self.dropout1 = nn.Dropout(p=0.5)
         self.fc2 = nn.Linear(512, 128)
         self.dropout2 = nn.Dropout(p=0.5)
-        self.fc3 = nn.Linear(128, 3)  # Output layer for 3 classes
+        self.fc3 = nn.Linear(128, 2)  # Output layer for 3 classes
        
     def forward(self, x):
         # Forward pass through convolutional and pooling layers

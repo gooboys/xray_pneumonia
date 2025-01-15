@@ -17,19 +17,11 @@ class twoCNN(nn.Module):
        
         # Fully connected layers
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(30 * 30 * 128, 4096)  # Flattened size from last pooling layer
+        self.fc1 = nn.Linear(30 * 30 * 128, 1048)  # Flattened size from last pooling layer
         self.dropout1 = nn.Dropout(p=0.5)
-        self.fc2 = nn.Linear(4096, 1365)  # Output layer for 3 classes
+        self.fc2 = nn.Linear(1048, 256)
         self.dropout2 = nn.Dropout(p=0.5)
-        self.fc3 = nn.Linear(1365,455)
-        self.dropout3 = nn.Dropout(p=0.5)
-        self.fc4 = nn.Linear(455, 153)
-        self.dropout4 = nn.Dropout(p=0.5)
-        self.fc5 = nn.Linear(153,51)
-        self.dropout5 = nn.Dropout(p=0.5)
-        self.fc6 = nn.Linear(51,17)
-        self.dropout6 = nn.Dropout(p=0.5)
-        self.fc7 = nn.Linear(17,3)
+        self.fc3 = nn.Linear(256, 3)  # Output layer for 3 classes
        
     def forward(self, x):
         # Forward pass through convolutional and pooling layers
@@ -37,27 +29,11 @@ class twoCNN(nn.Module):
         x = self.pool2(F.relu(self.conv2(x)))
         x = self.pool3(F.relu(self.conv3(x)))
        
-        # Flatten the output from the convolutional layers
+        # Flatten and pass through fully connected layers
         x = self.flatten(x)
-        
-        # Fully connected layers with ReLU activation and dropout
         x = F.relu(self.fc1(x))
         x = self.dropout1(x)
-        
         x = F.relu(self.fc2(x))
         x = self.dropout2(x)
-        
-        x = F.relu(self.fc3(x))
-        x = self.dropout3(x)
-        
-        x = F.relu(self.fc4(x))
-        x = self.dropout4(x)
-        
-        x = F.relu(self.fc5(x))
-        x = self.dropout5(x)
-        
-        x = F.relu(self.fc6(x))
-        x = self.dropout6(x)
-        
-        x = self.fc7(x)
+        x = self.fc3(x)
         return x

@@ -15,7 +15,7 @@ transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-CNN = standardCNN
+sCNN = standardCNN
 onCNN = oneCNN
 twCNN = twoCNN
 threCNN = threeCNN
@@ -241,7 +241,7 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
     print(f"Classification Report:\n{class_report}")
     print(f"AUC-ROC Score: {auc_roc_score:.4f}")
     
-    return class_report
+    return class_report, auc_roc_score
 
 
 
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 10
+    num_splits = 5
     train_size = 0.9
     num_epochs = 13
     batch_size = 32
@@ -265,20 +265,30 @@ if __name__ == "__main__":
 
     txt_file = "model_reports.txt"
 
-    report = montecarlo(onCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    report, ROC_score = montecarlo(sCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
     with open(txt_file, "a") as file:
         file.write("oneCNN" + ":\n")
         file.write(report)
+        file.write(f"ROC Score: {ROC_score}")
         file.write("\n")
 
-    # report = montecarlo(twCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-    # with open(txt_file, "a") as file:
-    #     file.write("twoCNN" + ":\n")
-    #     file.write(report)
-    #     file.write("\n")
+    report, ROC_score = montecarlo(onCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    with open(txt_file, "a") as file:
+        file.write("oneCNN" + ":\n")
+        file.write(report)
+        file.write(f"ROC Score: {ROC_score}")
+        file.write("\n")
 
-    # report = montecarlo(threCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-    # with open(txt_file, "a") as file:
-    #     file.write("threeCNN" + ":\n")
-    #     file.write(report)
-    #     file.write("\n")
+    report, ROC_score = montecarlo(twCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    with open(txt_file, "a") as file:
+        file.write("twoCNN" + ":\n")
+        file.write(report)
+        file.write(f"ROC Score: {ROC_score}")
+        file.write("\n")
+
+    report, ROC_score = montecarlo(threCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    with open(txt_file, "a") as file:
+        file.write("threeCNN" + ":\n")
+        file.write(report)
+        file.write(f"ROC Score: {ROC_score}")
+        file.write("\n")

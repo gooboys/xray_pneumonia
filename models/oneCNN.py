@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-class standardCNN(nn.Module):
+class oneCNN(nn.Module):
     def __init__(self):
-        super(standardCNN, self).__init__()
+        super(oneCNN, self).__init__()
        
         # Convolutional layers
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3)  # Input is grayscale (1 channel)

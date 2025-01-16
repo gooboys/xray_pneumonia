@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import standardCNN, oneCNN, twoCNN, threeCNN
+from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -19,6 +19,10 @@ sCNN = standardCNN
 onCNN = oneCNN
 twCNN = twoCNN
 threCNN = threeCNN
+fouCNN = fourCNN
+fivCNN = fiveCNN
+siCNN = sixCNN
+seveCNN = sevenCNN
 
 
 def train_test_split(file_path,test_size):
@@ -265,30 +269,43 @@ if __name__ == "__main__":
 
     txt_file = "disease_type.txt"
 
-    report, ROC_score = montecarlo(sCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-    with open(txt_file, "a") as file:
-        file.write("oneCNN" + ":\n")
-        file.write(report)
-        file.write(f"ROC Score: {ROC_score}")
-        file.write("\n")
+    models = [seveCNN]
+    model_names = ['sevenCNN']
 
-    report, ROC_score = montecarlo(onCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-    with open(txt_file, "a") as file:
-        file.write("oneCNN" + ":\n")
-        file.write(report)
-        file.write(f"ROC Score: {ROC_score}")
-        file.write("\n")
+    models_and_names = zip(models,model_names)
+    
+    for model, name in models_and_names:
+        report, ROC_score = montecarlo(model, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+        with open(txt_file, "a") as file:
+            file.write(name + ":\n")
+            file.write(report)
+            file.write(f"ROC Score: {ROC_score}")
+            file.write("\n")
 
-    report, ROC_score = montecarlo(twCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-    with open(txt_file, "a") as file:
-        file.write("twoCNN" + ":\n")
-        file.write(report)
-        file.write(f"ROC Score: {ROC_score}")
-        file.write("\n")
+    # report, ROC_score = montecarlo(sCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    # with open(txt_file, "a") as file:
+    #     file.write("oneCNN" + ":\n")
+    #     file.write(report)
+    #     file.write(f"ROC Score: {ROC_score}")
+    #     file.write("\n")
 
-    report, ROC_score = montecarlo(threCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-    with open(txt_file, "a") as file:
-        file.write("threeCNN" + ":\n")
-        file.write(report)
-        file.write(f"ROC Score: {ROC_score}")
-        file.write("\n")
+    # report, ROC_score = montecarlo(onCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    # with open(txt_file, "a") as file:
+    #     file.write("oneCNN" + ":\n")
+    #     file.write(report)
+    #     file.write(f"ROC Score: {ROC_score}")
+    #     file.write("\n")
+
+    # report, ROC_score = montecarlo(twCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    # with open(txt_file, "a") as file:
+    #     file.write("twoCNN" + ":\n")
+    #     file.write(report)
+    #     file.write(f"ROC Score: {ROC_score}")
+    #     file.write("\n")
+
+    # report, ROC_score = montecarlo(threCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    # with open(txt_file, "a") as file:
+    #     file.write("threeCNN" + ":\n")
+    #     file.write(report)
+    #     file.write(f"ROC Score: {ROC_score}")
+    #     file.write("\n")

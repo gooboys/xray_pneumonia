@@ -15,7 +15,7 @@ class sixCNN(nn.Module):
        
         # Fully connected layers
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(64*62*62, 512)  # Flattened size from last pooling layer
+        self.fc1 = nn.Linear(54*54*64, 512)  # Flattened size from last pooling layer
         self.dropout1 = nn.Dropout(p=0.5)
         self.fc2 = nn.Linear(512, 128)
         self.dropout2 = nn.Dropout(p=0.5)

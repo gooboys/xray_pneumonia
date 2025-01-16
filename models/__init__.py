@@ -6,5 +6,6 @@ from .fourCNN import fourCNN
 from .fiveCNN import fiveCNN
 from .sixCNN import sixCNN
 from .sevenCNN import sevenCNN
+from .transfer import transfer
 
-__all__ = ["standardCNN","oneCNN", "twoCNN", "threeCNN", "fourCNN", "fiveCNN", "sixCNN", "sevenCNN"]
+__all__ = ["standardCNN","oneCNN", "twoCNN", "threeCNN", "fourCNN", "fiveCNN", "sixCNN", "sevenCNN", "transfer"]

@@ -17,7 +17,7 @@ class fourCNN(nn.Module):
        
         # Fully connected layers
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(30 * 30 * 128, 512)  # Flattened size from last pooling layer
+        self.fc1 = nn.Linear(26 * 26 * 128, 512)  # Flattened size from last pooling layer
         self.dropout1 = nn.Dropout(p=0.5)
         self.fc2 = nn.Linear(512, 256)
         self.dropout2 = nn.Dropout(p=0.5)

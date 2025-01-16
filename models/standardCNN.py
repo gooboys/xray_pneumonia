@@ -17,7 +17,7 @@ class standardCNN(nn.Module):
        
         # Fully connected layers
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(30 * 30 * 128, 128)  # Flattened size from last pooling layer
+        self.fc1 = nn.Linear(26 * 26 * 128, 128)  # Flattened size from last pooling layer
         self.dropout = nn.Dropout(p=0.5)
         self.fc2 = nn.Linear(128, 2)  # Output layer for 3 classes
        

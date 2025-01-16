@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN
+from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, transfer
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -23,6 +23,7 @@ fouCNN = fourCNN
 fivCNN = fiveCNN
 siCNN = sixCNN
 seveCNN = sevenCNN
+trans = transfer
 
 
 def train_test_split(file_path,test_size):
@@ -270,7 +271,7 @@ if __name__ == "__main__":
     txt_file = "disease_type.txt"
 
     models = [seveCNN]
-    model_names = ['sevenCNN']
+    model_names = ['siCNN']
 
     models_and_names = zip(models,model_names)
     

@@ -178,7 +178,7 @@ def normalize_all(csv_file, target_contrast, target_brightness, normalized_folde
             post_contrast = normalize_contrast(img, target_contrast)
             post_brightness = normalize_brightness(post_contrast, target_brightness)
             # Resize and apply padding
-            normalized_image = apply_lanczos_with_padding(post_brightness, size=(256, 256))
+            normalized_image = apply_lanczos_with_padding(post_brightness, size=(224, 224))
             
             # Save the normalized image with a new filename
             saved_file_name = f"{normalized_folder}/image_{count}.jpeg"

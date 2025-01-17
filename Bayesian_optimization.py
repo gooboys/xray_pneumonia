@@ -7,12 +7,9 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
-import matplotlib.pyplot as plt
-from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, transfer
-from models import denseA1, denseA2, denseA3, denseA4
-from models import denseB1, denseB2, denseB3, denseB4, denseB5
-from models import eff1, eff2, eff3, eff4, eff5
+from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score
+import optuna
+from models import eff3, eff4, denseB5, denseA3
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -61,7 +58,7 @@ class ImageDataset(Dataset):
 
         return image, label
 
-def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit, plot=False):
+def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit, learn_rate, dropout_rate):
     train_loss_all = []
     val_loss_all = []
     train_accuracy_all = []
@@ -79,8 +76,8 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
         train_data, val_data = sk_train_test_split(train_data, train_size=train_size, stratify=train_data['Labels'])
 
         # Initialize a new model for each split
-        model = model_class().to(device)
-        optimizer = optimizer_class(model.parameters(), lr=0.001)
+        model = model_class(dropout_rate).to(device)
+        optimizer = optimizer_class(model.parameters(), lr=learn_rate)
 
         # Track training and validation losses
         train_losses = []
@@ -170,34 +167,6 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
     # Compute average loss over all splits
     avg_train_loss = [sum(epoch_losses) / num_splits for epoch_losses in zip(*train_loss_all)]
     avg_val_loss = [sum(epoch_losses) / num_splits for epoch_losses in zip(*val_loss_all)]
-    
-    # Compute average accuracy over all splits
-    avg_train_accuracy = [sum(epoch_accuracies) / num_splits for epoch_accuracies in zip(*train_accuracy_all)]
-    avg_val_accuracy = [sum(epoch_accuracies) / num_splits for epoch_accuracies in zip(*val_accuracy_all)]
-    
-    if plot:
-        # Plot results
-        plt.figure(figsize=(10, 6))
-        plt.plot(range(1, num_epochs+1), avg_train_loss, label='Average Training Loss')
-        plt.plot(range(1, num_epochs+1), avg_val_loss, label='Average Validation Loss')
-        plt.ylim(0.0, 1.0)
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.title('Training vs Validation Loss (Monte Carlo Cross-Validation)')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-        
-        plt.figure(figsize=(10, 6))
-        plt.plot(range(1, num_epochs+1), avg_train_accuracy, label='Average Training Accuracy')
-        plt.plot(range(1, num_epochs+1), avg_val_accuracy, label='Average Validation Accuracy')
-        plt.ylim(0, 100)
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.title('Training vs Validation Accuracy (Monte Carlo Cross-Validation)')
-        plt.legend()
-        plt.grid(True)
-        plt.show()
 
     # Testing on the test data
     test_dataset = ImageDataset(test_data, transform=transform)
@@ -239,11 +208,14 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
     print(f"Classification Report:\n{class_report}")
     print(f"AUC-ROC Score: {auc_roc_score:.4f}")
     
-    return class_report, auc_roc_score
+    return auc_roc_score
 
+def objective(trial, model_class):
+    # Define the hyperparameter search space
+    lr = trial.suggest_loguniform('lr', 1e-5, 1e-3)
+    dropout = trial.suggest_uniform('dropout', 0.3, 0.7)
+    batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
 
-
-if __name__ == "__main__":
     # csv file containing [Path, Label] for each normalized image
     csv_file = 'infection_type_labels.csv'
    
@@ -251,30 +223,46 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 10
+    num_splits = 4
     train_size = 0.9
     num_epochs = 15
-    batch_size = 32
     
     # Initialize other parameters
     criterion = nn.CrossEntropyLoss()
     optimizer_class = torch.optim.Adam
     limit = 3
 
-    txt_file = "transfer.txt"
+    # Train the model with these hyperparameters
+    val_labels, val_predictions = montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit, learn_rate=lr, dropout_rate=dropout)
 
-    models = [denseB5, eff4, eff5]
-    model_names = ['denseB15', 'eff4', 'eff5']
+    # Compute ROC-AUC score
+    roc_auc = roc_auc_score(val_labels, val_predictions)
 
-    # models = [eff1]
-    # model_names = ["eff1"]
+    return roc_auc  # Maximize ROC-AUC
 
-    models_and_names = zip(models,model_names)
-    
-    for model, name in models_and_names:
-        report, ROC_score = montecarlo(model, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-        with open(txt_file, "a") as file:
-            file.write(name + ":\n")
-            file.write(report)
-            file.write(f"ROC Score: {ROC_score}")
-            file.write("\n")
+if __name__ == "__main__":
+    study_a = optuna.create_study(direction="maximize")
+    study_a.optimize(lambda trial: objective(trial, model_class=eff3), n_trials=50)
+
+    study_b = optuna.create_study(direction="maximize")
+    study_b.optimize(lambda trial: objective(trial, model_class=eff4), n_trials=50)
+
+    study_c = optuna.create_study(direction="maximize")
+    study_c.optimize(lambda trial: objective(trial, model_class=denseA3), n_trials=50)
+
+    study_d = optuna.create_study(direction="maximize")
+    study_d.optimize(lambda trial: objective(trial, model_class=denseB5), n_trials=50)
+
+    # Save results to file
+    studies = {
+        "EFF3": study_a,
+        "EFF4": study_b,
+        "DenseA3": study_c,
+        "DenseB5": study_d,
+    }
+
+    with open('bayes.txt', 'w') as file:
+        for label, study in studies.items():
+            file.write(f'{label}:\n')  # Write the model name
+            file.write(f'Best Hyperparameters: {study.best_params}\n')  # Write best parameters
+            file.write(f'Best ROC-AUC Score: {study.best_value}\n\n')  # Write best score

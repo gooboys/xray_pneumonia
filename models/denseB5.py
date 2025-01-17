@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from torchvision.models import densenet169, DenseNet169_Weights
 
 class denseB5(nn.Module):
-    def __init__(self):
+    def __init__(self, dropout_rate=0.5):
         super(denseB5, self).__init__()
         # Using a pre-trained DenseNet-169
         self.densenet = densenet169(weights=DenseNet169_Weights.IMAGENET1K_V1)  # Use pre-trained weights
@@ -20,7 +20,7 @@ class denseB5(nn.Module):
 
         # Adjust the classifier to match the number of classes
         self.densenet.classifier = nn.Linear(1664, 128)  # DenseNet-169 has 1664 output features
-        self.dropout1 = nn.Dropout(p=0.5)
+        self.dropout1 = nn.Dropout(p=dropout_rate)
         self.fc1 = nn.Linear(128, 2)
 
     def forward(self, x):

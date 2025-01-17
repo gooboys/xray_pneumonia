@@ -4,7 +4,7 @@ from torchvision import models
 
 
 class denseA3(nn.Module):
-    def __init__(self):
+    def __init__(self,dropout_rate=0.5):
         super(denseA3, self).__init__()
         # Using a pre-trained DenseNet-121
         self.densenet = models.densenet121(pretrained=True)
@@ -21,9 +21,9 @@ class denseA3(nn.Module):
 
         # Adjust the classifier to match the number of classes
         self.densenet.classifier = nn.Linear(1024, 256)
-        self.dropout1 = nn.Dropout(p=0.5)
+        self.dropout1 = nn.Dropout(p=dropout_rate)
         self.fc1 = nn.Linear(256,128)
-        self.dropout2 = nn.Dropout(p=0.5)
+        self.dropout2 = nn.Dropout(p=dropout_rate)
         self.fc2 = nn.Linear(128,2)
 
     def forward(self, x):

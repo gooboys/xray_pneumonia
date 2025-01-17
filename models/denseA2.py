@@ -3,9 +3,9 @@ import torch.nn.functional as F
 from torchvision import models
 
 
-class transfer(nn.Module):
+class denseA2(nn.Module):
     def __init__(self):
-        super(transfer, self).__init__()
+        super(denseA2, self).__init__()
         # Using a pre-trained DenseNet-121
         self.densenet = models.densenet121(pretrained=True)
 
@@ -20,12 +20,17 @@ class transfer(nn.Module):
         )
 
         # Adjust the classifier to match the number of classes
-        self.densenet.classifier = nn.Linear(1024, 128)
+        self.densenet.classifier = nn.Linear(1024, 512)
         self.dropout1 = nn.Dropout(p=0.5)
-        self.fc1 = nn.Linear(128,2)
+        self.fc1 = nn.Linear(512,128)
+        self.dropout2 = nn.Dropout(p=0.5)
+        self.fc2 = nn.Linear(128,2)
 
     def forward(self, x):
         x = F.relu(self.densenet(x))
         x = self.dropout1(x)
-        x = self.fc1(x)
+        x = F.relu(self.fc1(x))
+        x = self.dropout2(x)
+        x = self.fc2(x)
+
         return x

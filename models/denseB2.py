@@ -1,13 +1,12 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import models
+from torchvision.models import densenet169, DenseNet169_Weights
 
-
-class transfer(nn.Module):
+class denseB2(nn.Module):
     def __init__(self):
-        super(transfer, self).__init__()
-        # Using a pre-trained DenseNet-121
-        self.densenet = models.densenet121(pretrained=True)
+        super(denseB2, self).__init__()
+        # Using a pre-trained DenseNet-169
+        self.densenet = densenet169(weights=DenseNet169_Weights.IMAGENET1K_V1)  # Use pre-trained weights
 
         # Modify the first convolutional layer to accept grayscale (1-channel) images
         self.densenet.features.conv0 = nn.Conv2d(
@@ -20,12 +19,21 @@ class transfer(nn.Module):
         )
 
         # Adjust the classifier to match the number of classes
-        self.densenet.classifier = nn.Linear(1024, 128)
+        self.densenet.classifier = nn.Linear(1664, 832)  # DenseNet-169 has 1664 output features
         self.dropout1 = nn.Dropout(p=0.5)
-        self.fc1 = nn.Linear(128,2)
+        self.fc1 = nn.Linear(832, 416)
+        self.dropout2 = nn.Dropout(p=0.5)
+        self.fc2 = nn.Linear(416, 208)
+        self.dropout3 = nn.Dropout(p=0.5)
+        self.fc3 = nn.Linear(208, 2)
 
     def forward(self, x):
         x = F.relu(self.densenet(x))
         x = self.dropout1(x)
-        x = self.fc1(x)
+        x = F.relu(self.fc1(x))
+        x = self.dropout2(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout3(x)
+        x = self.fc3(x)
+
         return x

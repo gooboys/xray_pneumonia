@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import eff3
+from models import eff3, eff4, denseA3, denseB5, standardCNN
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -327,17 +327,118 @@ def monte_carlo_cross_validation(model_class, data, training_config, meta_data, 
 
     return
 
+'''
+pneumonia_present_models = [] # list of models predicting if pneumonia is present
+pneumonia_present_model_type = eff3 # type of model predicting pneumonia
+
+pneumonia_type_models = {
+    eff3: ['model_1.pth','model_2.pth']
+    eff4: ['model_3.pth','model_4.pth']
+}
+'''
+# Runs the model with an image from image path, also takes in a model if it is not a string.
+def run_model(pneumonia_present_models, pneumonia_present_model_type, pneumonia_type_models, image_path, transform, device, showCAM):
+
+    image = Image.open(image_path).convert("L")
+    input_tensor = transform(image).unsqueeze(0).to(device)
+
+    actual_predicted_class = 0
+   
+    heatmaps = []
+    overlays = []
+    ensemble_outputs = []
+    df = pd.read_csv('Normalized_Image_Paths.csv')
+    label = int(df.loc[df['Paths'] == image_path, 'Labels'].values[0])
+    for path in pneumonia_present_models:
+        model = pneumonia_present_model_type().to(device)
+        model.load_state_dict(torch.load(path, weights_only=True))
+        model.eval()
+        with torch.no_grad():
+            outputs = model(input_tensor)
+            ensemble_outputs.append(F.softmax(outputs, dim=1).cpu().numpy())
+        overlay, heatmap = model.generate_cam(model, image_path, label, make_graphs=showCAM)
+        overlays.append(overlay)
+        heatmaps.append(heatmap)
+   
+    # Average predictions
+    ensemble_outputs = np.mean(ensemble_outputs, axis=0)
+    predicted_class = np.argmax(ensemble_outputs)
+    
+    if predicted_class == 1:
+        ensemble_outputs2 = []
+        for model_class in pneumonia_type_models.keys():
+            for model_path in pneumonia_type_models.get(model_class):
+                model = model_class().to(device)
+                model.load_state_dict(torch.load(model_path, weights_only=True))
+                model.eval()
+                with torch.no_grad():
+                    outputs = model(input_tensor)
+                    ensemble_outputs2.append(F.softmax(outputs, dim=1).cpu().numpy())
+                overlay, heatmap = model.generate_cam(model, image_path, label, make_graphs=showCAM)
+                overlays.append(overlay)
+                heatmaps.append(heatmap)
+        # Average predictions
+        ensemble_outputs2 = np.mean(ensemble_outputs2, axis=0)
+        predicted_class = np.argmax(ensemble_outputs2)
+        if predicted_class == 0:
+            actual_predicted_class = 1
+        else:
+            actual_predicted_class = 2
+    actual_class_mapping = {0: "normal", 1: "bacterial", 2: "viral"}
+    print(f"Predicted Class (Ensemble): {actual_class_mapping.get(actual_predicted_class, 'Unknown')}")
+    print(f"Actual Class: {actual_class_mapping.get(label, 'Unknown')}")
+   
+    # Convert all heatmaps to NumPy arrays and ensure they are 2D
+    heatmap_arrays = [np.squeeze(np.array(heatmap)) for heatmap in heatmaps]
+
+    # Check if the resulting arrays are 2D
+    for i, heatmap in enumerate(heatmap_arrays):
+        if len(heatmap.shape) != 2:
+            raise ValueError(f"Heatmap at index {i} is not 2D. Shape: {heatmap.shape}")
+
+    # Stack the heatmaps along a new axis and compute the mean
+    mean_heatmap = np.mean(np.stack(heatmap_arrays, axis=0), axis=0)
+
+    # Normalize the mean heatmap to [0, 255]
+    mean_heatmap -= mean_heatmap.min()
+    mean_heatmap /= mean_heatmap.max()
+    mean_heatmap = (mean_heatmap * 255).astype('uint8')
+   
+    if predicted_class == 0:
+        class_name = "Normal"
+    elif predicted_class == 1:
+        class_name = "Bacterial"
+    else:
+        class_name = "Viral"
+       
+    if showCAM == True:
+        # Display both the heatmap and overlay
+        plt.figure(figsize=(12, 6))
+   
+        # Display Heatmap
+        plt.subplot(1, 2, 1)
+        plt.imshow(mean_heatmap)
+        plt.title(f'Class Activation Map Heatmap for {class_name} Class')
+        plt.axis("off")
+   
+        # Display Overlay
+        plt.subplot(1, 2, 2)
+        plt.imshow(overlay)
+        plt.title(f'Overlay for {class_name} Class')
+        plt.axis("off")
+   
+        # Adjust layout to prevent title cut off
+        plt.subplots_adjust(top=0.85, bottom=0.1, left=0.1, right=0.9)
+   
+        plt.tight_layout()
+        plt.show()
+
 if __name__ == "__main__":
     # csv file containing [Path, Label] for each normalized image
     csv_file = 'Normalized_Image_Paths.csv'
    
     # Split the data into training and testing (80-20) while maintaining balanced classes
     disease_type_train, disease_type_test, disease_train, disease_test = train_test_split(csv_file, 0.1)
-
-    # Initialize the model and move it to the GPU if available
-    model = eff3().to(device)
-
-    model_class = eff3
     
     data = {
         'train': disease_train,
@@ -345,17 +446,82 @@ if __name__ == "__main__":
         'transform': transform
     }
 
-    training_config = {
+    # For model eff3
+    training_config1 = {
         'criterion': nn.CrossEntropyLoss(),
         'optimizer_class': torch.optim.Adam,
-        'model_paths': ['a1.pth','a2.pth'],
+        'model_paths': ['TrainedModels/eff31.pth','TrainedModels/eff32.pth', 'TrainedModels/eff33.pth', 'TrainedModels/eff34.pth'],
         'train_size': 0.1,
-        'num_epochs': 2,
+        'num_epochs': 10,
         'batch_size': 32
     }
-    meta_data = {
+    meta_data1 = {
         'model_type': 1,
         'graphs': 0,
     }
 
-    monte_carlo_cross_validation(model_class, data, training_config, meta_data, device)
+    monte_carlo_cross_validation(eff3, data, training_config1, meta_data1, device)
+
+    # For model eff4
+    training_config1 = {
+        'criterion': nn.CrossEntropyLoss(),
+        'optimizer_class': torch.optim.Adam,
+        'model_paths': ['TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth'],
+        'train_size': 0.1,
+        'num_epochs': 10,
+        'batch_size': 32
+    }
+    meta_data1 = {
+        'model_type': 1,
+        'graphs': 0,
+    }
+
+    monte_carlo_cross_validation(eff4, data, training_config1, meta_data1, device)
+
+    # For model denseA3
+    training_config1 = {
+        'criterion': nn.CrossEntropyLoss(),
+        'optimizer_class': torch.optim.Adam,
+        'model_paths': ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth'],
+        'train_size': 0.1,
+        'num_epochs': 10,
+        'batch_size': 32
+    }
+    meta_data1 = {
+        'model_type': 1,
+        'graphs': 0,
+    }
+
+    monte_carlo_cross_validation(denseA3, data, training_config1, meta_data1, device)
+
+    # For model denseB5
+    training_config1 = {
+        'criterion': nn.CrossEntropyLoss(),
+        'optimizer_class': torch.optim.Adam,
+        'model_paths': ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth'],
+        'train_size': 0.1,
+        'num_epochs': 10,
+        'batch_size': 32
+    }
+    meta_data1 = {
+        'model_type': 1,
+        'graphs': 0,
+    }
+
+    monte_carlo_cross_validation(denseB5, data, training_config1, meta_data1, device)
+
+    # For standardCNN
+    training_config1 = {
+        'criterion': nn.CrossEntropyLoss(),
+        'optimizer_class': torch.optim.Adam,
+        'model_paths': ['TrainedModels/standard1.pth','TrainedModels/standard2.pth','TrainedModels/standard3.pth','TrainedModels/standard4.pth'],
+        'train_size': 0.1,
+        'num_epochs': 10,
+        'batch_size': 32
+    }
+    meta_data1 = {
+        'model_type': 0,
+        'graphs': 0,
+    }
+
+    monte_carlo_cross_validation(standardCNN, data, training_config1, meta_data1, device)

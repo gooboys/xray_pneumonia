@@ -233,10 +233,7 @@ def objective(trial, model_class):
     limit = 3
 
     # Train the model with these hyperparameters
-    val_labels, val_predictions = montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit, learn_rate=lr, dropout_rate=dropout)
-
-    # Compute ROC-AUC score
-    roc_auc = roc_auc_score(val_labels, val_predictions)
+    roc_auc = montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit, learn_rate=lr, dropout_rate=dropout)
 
     return roc_auc  # Maximize ROC-AUC
 

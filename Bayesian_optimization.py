@@ -238,28 +238,44 @@ def objective(trial, model_class):
     return roc_auc  # Maximize ROC-AUC
 
 if __name__ == "__main__":
-    study_a = optuna.create_study(direction="maximize")
-    study_a.optimize(lambda trial: objective(trial, model_class=eff3), n_trials=50)
+    # study_a = optuna.create_study(direction="maximize")
+    # study_a.optimize(lambda trial: objective(trial, model_class=eff3), n_trials=50)
+    # with open('bayes.txt', 'w') as file:
+    #     file.write(f'{'eff3'}:\n')  # Write the model name
+    #     file.write(f'Best Hyperparameters: {study_a.best_params}\n')  # Write best parameters
+    #     file.write(f'Best ROC-AUC Score: {study_a.best_value}\n\n')  # Write best score
 
     study_b = optuna.create_study(direction="maximize")
     study_b.optimize(lambda trial: objective(trial, model_class=eff4), n_trials=50)
+    with open('bayes.txt', 'w') as file:
+        file.write(f'{'eff4'}:\n')  # Write the model name
+        file.write(f'Best Hyperparameters: {study_b.best_params}\n')  # Write best parameters
+        file.write(f'Best ROC-AUC Score: {study_b.best_value}\n\n')  # Write best score
 
     study_c = optuna.create_study(direction="maximize")
     study_c.optimize(lambda trial: objective(trial, model_class=denseA3), n_trials=50)
+    with open('bayes.txt', 'w') as file:
+        file.write(f'{'denseA3'}:\n')  # Write the model name
+        file.write(f'Best Hyperparameters: {study_c.best_params}\n')  # Write best parameters
+        file.write(f'Best ROC-AUC Score: {study_c.best_value}\n\n')  # Write best score
 
     study_d = optuna.create_study(direction="maximize")
     study_d.optimize(lambda trial: objective(trial, model_class=denseB5), n_trials=50)
-
-    # Save results to file
-    studies = {
-        "EFF3": study_a,
-        "EFF4": study_b,
-        "DenseA3": study_c,
-        "DenseB5": study_d,
-    }
-
     with open('bayes.txt', 'w') as file:
-        for label, study in studies.items():
-            file.write(f'{label}:\n')  # Write the model name
-            file.write(f'Best Hyperparameters: {study.best_params}\n')  # Write best parameters
-            file.write(f'Best ROC-AUC Score: {study.best_value}\n\n')  # Write best score
+        file.write(f'{'denseB5'}:\n')  # Write the model name
+        file.write(f'Best Hyperparameters: {study_d.best_params}\n')  # Write best parameters
+        file.write(f'Best ROC-AUC Score: {study_d.best_value}\n\n')  # Write best score
+
+    # # Save results to file
+    # studies = {
+    #     "EFF3": study_a,
+    #     "EFF4": study_b,
+    #     "DenseA3": study_c,
+    #     "DenseB5": study_d,
+    # }
+
+    # with open('bayes.txt', 'w') as file:
+    #     for label, study in studies.items():
+    #         file.write(f'{label}:\n')  # Write the model name
+    #         file.write(f'Best Hyperparameters: {study.best_params}\n')  # Write best parameters
+    #         file.write(f'Best ROC-AUC Score: {study.best_value}\n\n')  # Write best score

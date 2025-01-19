@@ -327,6 +327,79 @@ def monte_carlo_cross_validation(model_class, data, training_config, meta_data, 
 
     return
 
+def evaluate_model(model_path, model_class, model_type, test_data, batch_size, transform, graphs, device=None):
+    # Set up device
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Create dataset and dataloader for the test data
+    test_dataset = ImageDataset(test_data, transform=transform)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    predictions = []
+    label = []
+    all_probabilities = []
+
+    # Load the model
+    model = model_class().to(device)
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
+
+    for images, labels in test_loader:
+        images, labels = images.to(device), labels.to(device)
+
+        # Evaluate model
+        with torch.no_grad():
+            outputs = model(images)
+            probabilities = F.softmax(outputs, dim=1).cpu().numpy()
+            predicted = np.argmax(probabilities, axis=1)
+
+            predictions.extend(predicted)
+            label.extend(labels.cpu().numpy())
+            all_probabilities.extend(probabilities)
+
+    # Define class names
+    if model_type:
+        class_names = ['Bacterial', 'Viral']
+    else:
+        class_names = ['No Infection', 'Infection']
+
+    # Confusion Matrix and Classification Report
+    conf_matrix = confusion_matrix(label, predictions)
+    class_report = classification_report(label, predictions, target_names=class_names)
+
+    # AUC-ROC for multi-class classification
+    all_labels_one_hot = np.eye(len(class_names))[label]
+    auc_roc_score = roc_auc_score(all_labels_one_hot, np.array(all_probabilities), multi_class='ovr')
+
+    # Print results
+    print(f"Confusion Matrix:\n{conf_matrix}")
+    print(f"Classification Report:\n{class_report}")
+    print(f"AUC-ROC Score: {auc_roc_score:.4f}")
+
+    # ROC Curve plotting for binary classification
+    fpr, tpr, _ = roc_curve(all_labels_one_hot[:, 1], np.array(all_probabilities)[:, 1])  # Positive class probabilities
+    auc_score = roc_auc_score(all_labels_one_hot[:, 1], np.array(all_probabilities)[:, 1])
+
+    plt.figure(figsize=(10, 8))
+    plt.plot(fpr, tpr, label=f'ROC curve (AUC = {auc_score:.2f})', color='b')
+    plt.plot([0, 1], [0, 1], 'k--')  # Diagonal line (random model)
+
+    # Plot settings
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc='lower right')
+
+    if graphs:
+        plt.show()
+
+    # Return results
+    return conf_matrix, class_report, auc_roc_score
+
+
 '''
 pneumonia_present_models = [] # list of models predicting if pneumonia is present
 pneumonia_present_model_type = eff3 # type of model predicting pneumonia

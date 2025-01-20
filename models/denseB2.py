@@ -6,7 +6,7 @@ class denseB2(nn.Module):
     def __init__(self):
         super(denseB2, self).__init__()
         # Using a pre-trained DenseNet-169
-        self.densenet = densenet169(weights=DenseNet169_Weights.IMAGENET1K_V1)  # Use pre-trained weights
+        self.densenet = densenet169(weights=None)  # Use pre-trained weights DenseNet169_Weights.IMAGENET1K_V1
 
         # Modify the first convolutional layer to accept grayscale (1-channel) images
         self.densenet.features.conv0 = nn.Conv2d(

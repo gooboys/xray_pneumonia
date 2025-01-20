@@ -9,12 +9,14 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, transfer
-from models import denseA1, denseA2, denseA3, denseA4, denseA5
-from models import denseB1, denseB2, denseB3, denseB4, denseB5
-from models import eff1, eff2, eff3, eff4, eff5
-from models import mobileV21, mobileV22, mobileV23, mobileV24, mobileV25
-from models import mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
+from models import (
+    standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, transfer,
+    denseA1, denseA2, denseA3, denseA4, denseA5,
+    denseB1, denseB2, denseB3, denseB4, denseB5,
+    eff1, eff2, eff3, eff4, eff5,
+    mobileV21, mobileV22, mobileV23, mobileV24, mobileV25,
+    mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
+)
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -263,15 +265,29 @@ if __name__ == "__main__":
     optimizer_class = torch.optim.Adam
     limit = 3
 
-    txt_file = "transfer.txt"
+    txt_file = "transfer2.txt"
 
     # NOTE: Models with flexible dropout rates do not work here
 
-    # models = [mobileV21, mobileV22, mobileV23, mobileV24, mobileV25, mobileV31, mobileV32, mobileV33, mobileV34, mobileV35]
-    # model_names = ["mobileV21", "mobileV22", "mobileV23", "mobileV24", "mobileV25", "mobileV31", "mobileV32", "mobileV33", "mobileV34", "mobileV35"]
+    # List of model objects
+    models = [
+        denseA1, denseA2, denseA3, denseA4, denseA5,
+        denseB1, denseB2, denseB3, denseB4, denseB5,
+        eff1, eff2, eff3, eff4, eff5,
+        mobileV21, mobileV22, mobileV23, mobileV24, mobileV25,
+        mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
+    ]
 
-    models = [denseA5]
-    model_names = ["denseA5"]
+    # List of model names as strings
+    model_names = [
+        "denseA1", "denseA2", "denseA3", "denseA4", "denseA5",
+        "denseB1", "denseB2", "denseB3", "denseB4", "denseB5",
+        "eff1", "eff2", "eff3", "eff4", "eff5",
+        "mobileV21", "mobileV22", "mobileV23", "mobileV24", "mobileV25",
+        "mobileV31", "mobileV32", "mobileV33", "mobileV34", "mobileV35"
+    ]
+    # models = [denseA5]
+    # model_names = ["denseA5"]
 
     models_and_names = zip(models,model_names)
     

@@ -32,8 +32,7 @@ from .mobileV32 import mobileV32
 from .mobileV33 import mobileV33
 from .mobileV34 import mobileV34
 from .mobileV35 import mobileV35
-from .tmobileV22 import tmobileV22
-
+from .tdense121 import tdense121
 __all__ = [
     "standardCNN","oneCNN", "twoCNN", "threeCNN", "fourCNN", "fiveCNN", "sixCNN", "sevenCNN", "transfer",
     "denseA1", "denseA2", "denseA3", "denseA4", "denseA5",
@@ -41,5 +40,5 @@ __all__ = [
     "eff1", "eff2", "eff3", "eff4", "eff5",
     "mobileV21", "mobileV22", "mobileV23", "mobileV24", "mobileV25",
     "mobileV31", "mobileV32", "mobileV33", "mobileV34", "mobileV35",
-    "tmobileV22"
+    "tdense121"
            ]

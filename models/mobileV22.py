@@ -7,7 +7,7 @@ class mobileV22(nn.Module):
     def __init__(self):
         super(mobileV22, self).__init__()
         # Load pre-trained MobileNetV2
-        self.mobilenet = models.mobilenet_v2(pretrained=True)
+        self.mobilenet = models.mobilenet_v2(pretrained=False)
         
         # Modify the first convolutional layer to accept grayscale images
         self.mobilenet.features[0][0] = nn.Conv2d(

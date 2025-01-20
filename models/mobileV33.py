@@ -7,9 +7,9 @@ class mobileV33(nn.Module):
         super(mobileV33, self).__init__()
         # Load pre-trained MobileNetV3 (Large or Small)
         if version == 'large':
-            self.mobilenet = models.mobilenet_v3_large(pretrained=True)
+            self.mobilenet = models.mobilenet_v3_large(pretrained=False)
         else:
-            self.mobilenet = models.mobilenet_v3_small(pretrained=True)
+            self.mobilenet = models.mobilenet_v3_small(pretrained=False)
         
         # Modify the first convolutional layer to accept grayscale images
         self.mobilenet.features[0][0] = nn.Conv2d(

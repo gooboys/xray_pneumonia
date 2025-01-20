@@ -10,9 +10,11 @@ from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
 from models import standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, transfer
-from models import denseA1, denseA2, denseA3, denseA4
+from models import denseA1, denseA2, denseA3, denseA4, denseA5
 from models import denseB1, denseB2, denseB3, denseB4, denseB5
 from models import eff1, eff2, eff3, eff4, eff5
+from models import mobileV21, mobileV22, mobileV23, mobileV24, mobileV25
+from models import mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -251,7 +253,7 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 10
+    num_splits = 20
     train_size = 0.9
     num_epochs = 15
     batch_size = 32
@@ -263,11 +265,13 @@ if __name__ == "__main__":
 
     txt_file = "transfer.txt"
 
-    models = [denseB5, eff4, eff5]
-    model_names = ['denseB15', 'eff4', 'eff5']
+    # NOTE: Models with flexible dropout rates do not work here
 
-    # models = [eff1]
-    # model_names = ["eff1"]
+    # models = [mobileV21, mobileV22, mobileV23, mobileV24, mobileV25, mobileV31, mobileV32, mobileV33, mobileV34, mobileV35]
+    # model_names = ["mobileV21", "mobileV22", "mobileV23", "mobileV24", "mobileV25", "mobileV31", "mobileV32", "mobileV33", "mobileV34", "mobileV35"]
+
+    models = [denseA5]
+    model_names = ["denseA5"]
 
     models_and_names = zip(models,model_names)
     

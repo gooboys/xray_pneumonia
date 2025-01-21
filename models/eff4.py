@@ -7,7 +7,7 @@ class eff4(nn.Module):
     def __init__(self,dropout_rate=0.5):
         super(eff4, self).__init__()
         # Load the pre-trained EfficientNet-B0
-        self.efficientnet = models.efficientnet_b0(pretrained=False)
+        self.efficientnet = models.efficientnet_b0(pretrained=True)
 
         # Modify the first convolutional layer to accept grayscale (1-channel) images
         self.efficientnet.features[0][0] = nn.Conv2d(

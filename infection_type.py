@@ -255,9 +255,9 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 20
+    num_splits = 30
     train_size = 0.9
-    num_epochs = 15
+    num_epochs = 25
     batch_size = 32
     
     # Initialize other parameters
@@ -271,6 +271,7 @@ if __name__ == "__main__":
 
     # List of model objects
     models = [
+        transfer,
         denseA1, denseA2, denseA3, denseA4, denseA5,
         denseB1, denseB2, denseB3, denseB4, denseB5,
         eff1, eff2, eff3, eff4, eff5,
@@ -280,6 +281,7 @@ if __name__ == "__main__":
 
     # List of model names as strings
     model_names = [
+        "transfer",
         "denseA1", "denseA2", "denseA3", "denseA4", "denseA5",
         "denseB1", "denseB2", "denseB3", "denseB4", "denseB5",
         "eff1", "eff2", "eff3", "eff4", "eff5",

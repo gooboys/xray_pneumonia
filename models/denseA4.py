@@ -7,7 +7,7 @@ class denseA4(nn.Module):
     def __init__(self):
         super(denseA4, self).__init__()
         # Using a pre-trained DenseNet-121
-        self.densenet = models.densenet121(pretrained=False)
+        self.densenet = models.densenet121(pretrained=True)
 
         # Modify the first convolutional layer to accept grayscale (1-channel) images
         self.densenet.features.conv0 = nn.Conv2d(

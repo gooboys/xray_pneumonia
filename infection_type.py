@@ -17,6 +17,9 @@ from models import (
     mobileV21, mobileV22, mobileV23, mobileV24, mobileV25,
     mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
 )
+from expModels import (
+    tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21
+)
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -265,28 +268,18 @@ if __name__ == "__main__":
     optimizer_class = torch.optim.Adam
     limit = 3
 
-    txt_file = "transfer2.txt"
+    txt_file = "xModels.txt"
 
     # NOTE: Models with flexible dropout rates do not work here
 
     # List of model objects
     models = [
-        transfer,
-        denseA1, denseA2, denseA3, denseA4, denseA5,
-        denseB1, denseB2, denseB3, denseB4, denseB5,
-        eff1, eff2, eff3, eff4, eff5,
-        mobileV21, mobileV22, mobileV23, mobileV24, mobileV25,
-        mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
+        tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21
     ]
 
     # List of model names as strings
     model_names = [
-        "transfer",
-        "denseA1", "denseA2", "denseA3", "denseA4", "denseA5",
-        "denseB1", "denseB2", "denseB3", "denseB4", "denseB5",
-        "eff1", "eff2", "eff3", "eff4", "eff5",
-        "mobileV21", "mobileV22", "mobileV23", "mobileV24", "mobileV25",
-        "mobileV31", "mobileV32", "mobileV33", "mobileV34", "mobileV35"
+        'tDenseA3', 'tDenseA5', 'tDenseB4', 'teff4', 'teff5', 'tMobileV21'
     ]
     # models = [denseA5]
     # model_names = ["denseA5"]

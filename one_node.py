@@ -98,10 +98,11 @@ class ImageDataset(Dataset):
         return image, float(label)
 
 # Training function with train and validation accuracy, saving the best model to memory
-def train_model(model, trainloader, valloader, criterion, optimizer, num_epochs, device):
+def train_model(model, trainloader, valloader, criterion, optimizer, num_epochs, device, patience=4):
     model.train()  # Set the model to training mode
     best_val_loss = float("inf")  # Initialize best validation loss to infinity
     best_model_state = None  # To store the best model state
+    epochs_no_improve = 0  # Count epochs with no improvement in validation loss
 
     for epoch in range(num_epochs):
         # Training phase
@@ -151,11 +152,20 @@ def train_model(model, trainloader, valloader, criterion, optimizer, num_epochs,
         avg_val_loss = epoch_val_loss / len(valloader)
         val_accuracy = 100 * correct_val / total_val
 
-        # Save the model state if the validation loss improves
+        # Check for improvement in validation loss
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             best_model_state = model.state_dict()  # Save the current model state
+            epochs_no_improve = 0  # Reset counter
             print(f"Best model updated with validation loss: {best_val_loss:.4f}")
+        else:
+            epochs_no_improve += 1
+            print(f"No improvement in validation loss for {epochs_no_improve} epochs.")
+        
+        # Early stopping check
+        if epochs_no_improve >= patience:
+            print(f"Early stopping triggered after {epoch + 1} epochs. Best validation loss: {best_val_loss:.4f}")
+            break
 
         # Print metrics for the epoch
         print(f"Epoch {epoch + 1}/{num_epochs} - "
@@ -166,6 +176,7 @@ def train_model(model, trainloader, valloader, criterion, optimizer, num_epochs,
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
         print("Loaded the best model state into the current model.")
+
 
 
 # Testing function with ROC-AUC score and classification report
@@ -251,7 +262,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam
 
     models = [
-        standardCNN, oneCNN, twoCNN, threeCNN, fourCNN, fiveCNN, sixCNN, sevenCNN, transfer,
+        transfer,
         denseA1, denseA2, denseA3, denseA4, denseA5,
         denseB1, denseB2, denseB3, denseB4, denseB5,
         eff1, eff2, eff3, eff4, eff5,
@@ -259,7 +270,7 @@ if __name__ == "__main__":
         mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
     ]
     model_names = [
-        "standardCNN","oneCNN", "twoCNN", "threeCNN", "fourCNN", "fiveCNN", "sixCNN", "sevenCNN", "transfer",
+        "transfer",
         "denseA1", "denseA2", "denseA3", "denseA4", "denseA5",
         "denseB1", "denseB2", "denseB3", "denseB4", "denseB5",
         "eff1", "eff2", "eff3", "eff4", "eff5",

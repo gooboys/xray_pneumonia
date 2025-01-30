@@ -18,7 +18,7 @@ from models import (
     mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
 )
 from expModels import (
-    tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21
+    tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21, tDenseA31, teff41, teff42, teff43, teff44
 )
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 30
+    num_splits = 40
     train_size = 0.9
     num_epochs = 25
     batch_size = 32
@@ -274,12 +274,12 @@ if __name__ == "__main__":
 
     # List of model objects
     models = [
-        tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21
+        tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21, tDenseA31, teff41, teff42, teff43, teff44
     ]
 
     # List of model names as strings
     model_names = [
-        'tDenseA3', 'tDenseA5', 'tDenseB4', 'teff4', 'teff5', 'tMobileV21'
+        'tDenseA3', 'tDenseA5', 'tDenseB4', 'teff4', 'teff5', 'tMobileV21', 'tDenseA31', 'teff41', 'teff42', 'teff43', 'teff44'
     ]
     # models = [denseA5]
     # model_names = ["denseA5"]

@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import eff3, eff4, denseA3, denseB5, standardCNN
+from models import eff3, eff4, denseA3, denseB5
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -104,7 +104,9 @@ training_config = {
     'model_paths': model_paths, #(list of model names)
     'train_size': train_size, # (decimal of test data ratio)
     'num_epochs': num_epochs,
-    'batch_size': batch_size
+    'batch_size': batch_size,
+    'dropout_rate': dropout_rate,
+    'learning_rate': lr
 }
 meta_data = {
     'model_type': 0, # (0 for if disease is present, 1 for disease type classification)
@@ -112,7 +114,7 @@ meta_data = {
 }
 '''
 def monte_carlo_cross_validation(model_class, data, training_config, meta_data, device):
-    train_data = data.get('train')
+    tran_data = data.get('train')
     test_data = data.get('test')
     transform = data.get('transform')
 
@@ -122,6 +124,8 @@ def monte_carlo_cross_validation(model_class, data, training_config, meta_data, 
     train_size = training_config.get('train_size')
     num_epochs = training_config.get('num_epochs')
     batch_size = training_config.get('batch_size')
+    drop_rate = training_config.get('dropout_rate', 0.5)
+    learn_rate = training_config.get('learning_rate', 0.001)
 
     model_type = meta_data.get('model_type')
     graphs = meta_data.get('graphs')
@@ -143,11 +147,11 @@ def monte_carlo_cross_validation(model_class, data, training_config, meta_data, 
         best_val_loss = float('inf')
        
         # Randomly split the data into training and validation sets
-        train_data, val_data = sk_train_test_split(train_data, train_size=train_size, stratify=train_data['Labels'])
+        train_data, val_data = sk_train_test_split(tran_data, train_size=train_size, stratify=tran_data['Labels'])
 
         # Initialize a new model for each split
-        model = model_class().to(device)
-        optimizer = optimizer_class(model.parameters(), lr=0.001)
+        model = model_class(drop_rate).to(device)
+        optimizer = optimizer_class(model.parameters(), lr=learn_rate)
 
         # Track training and validation losses
         train_losses = []
@@ -525,15 +529,17 @@ if __name__ == "__main__":
         'optimizer_class': torch.optim.Adam,
         'model_paths': ['TrainedModels/eff31.pth','TrainedModels/eff32.pth', 'TrainedModels/eff33.pth', 'TrainedModels/eff34.pth'],
         'train_size': 0.1,
-        'num_epochs': 10,
-        'batch_size': 32
+        'num_epochs': 20,
+        'batch_size': 64,
+        'dropout_rate': 0.6775137337484378,
+        'learning_rate': 0.0005434415095960463
     }
     meta_data1 = {
         'model_type': 1,
         'graphs': 0,
     }
 
-    monte_carlo_cross_validation(eff3, data, training_config1, meta_data1, device)
+    # monte_carlo_cross_validation(eff3, data, training_config1, meta_data1, device)
 
     # For model eff4
     training_config1 = {
@@ -541,15 +547,17 @@ if __name__ == "__main__":
         'optimizer_class': torch.optim.Adam,
         'model_paths': ['TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth'],
         'train_size': 0.1,
-        'num_epochs': 10,
-        'batch_size': 32
+        'num_epochs': 20,
+        'batch_size': 64,
+        'dropout_rate': 0.5007265217094025,
+        'learning_rate': 0.0009736960816122808
     }
     meta_data1 = {
         'model_type': 1,
         'graphs': 0,
     }
 
-    monte_carlo_cross_validation(eff4, data, training_config1, meta_data1, device)
+    # monte_carlo_cross_validation(eff4, data, training_config1, meta_data1, device)
 
     # For model denseA3
     training_config1 = {
@@ -557,15 +565,17 @@ if __name__ == "__main__":
         'optimizer_class': torch.optim.Adam,
         'model_paths': ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth'],
         'train_size': 0.1,
-        'num_epochs': 10,
-        'batch_size': 32
+        'num_epochs': 20,
+        'batch_size': 16,
+        'dropout_rate': 0.6196310613745626,
+        'learning_rate': 0.000420675036631029
     }
     meta_data1 = {
         'model_type': 1,
         'graphs': 0,
     }
 
-    monte_carlo_cross_validation(denseA3, data, training_config1, meta_data1, device)
+    # monte_carlo_cross_validation(denseA3, data, training_config1, meta_data1, device)
 
     # For model denseB5
     training_config1 = {
@@ -573,8 +583,10 @@ if __name__ == "__main__":
         'optimizer_class': torch.optim.Adam,
         'model_paths': ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth'],
         'train_size': 0.1,
-        'num_epochs': 10,
-        'batch_size': 32
+        'num_epochs': 20,
+        'batch_size': 16,
+        'dropout_rate': 0.3488616602654536,
+        'learning_rate': 0.0004355666381799594
     }
     meta_data1 = {
         'model_type': 1,
@@ -583,18 +595,3 @@ if __name__ == "__main__":
 
     monte_carlo_cross_validation(denseB5, data, training_config1, meta_data1, device)
 
-    # For standardCNN
-    training_config1 = {
-        'criterion': nn.CrossEntropyLoss(),
-        'optimizer_class': torch.optim.Adam,
-        'model_paths': ['TrainedModels/standard1.pth','TrainedModels/standard2.pth','TrainedModels/standard3.pth','TrainedModels/standard4.pth'],
-        'train_size': 0.1,
-        'num_epochs': 10,
-        'batch_size': 32
-    }
-    meta_data1 = {
-        'model_type': 0,
-        'graphs': 0,
-    }
-
-    monte_carlo_cross_validation(standardCNN, data, training_config1, meta_data1, device)

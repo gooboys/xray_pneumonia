@@ -9,7 +9,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from models import eff3, eff4, denseA3, denseB5
+# from models import eff3, eff4, denseA3, denseB5
+from camModels import eff3, eff4, denseA3, denseB5
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -527,7 +528,8 @@ if __name__ == "__main__":
     training_config1 = {
         'criterion': nn.CrossEntropyLoss(),
         'optimizer_class': torch.optim.Adam,
-        'model_paths': ['TrainedModels/eff31.pth','TrainedModels/eff32.pth', 'TrainedModels/eff33.pth', 'TrainedModels/eff34.pth'],
+        # 'model_paths': ['TrainedModels/eff31.pth','TrainedModels/eff32.pth', 'TrainedModels/eff33.pth', 'TrainedModels/eff34.pth'],
+        'model_paths': ['testModel/eff3'],
         'train_size': 0.1,
         'num_epochs': 20,
         'batch_size': 64,
@@ -539,13 +541,14 @@ if __name__ == "__main__":
         'graphs': 0,
     }
 
-    # monte_carlo_cross_validation(eff3, data, training_config1, meta_data1, device)
+    monte_carlo_cross_validation(eff3, data, training_config1, meta_data1, device)
 
     # For model eff4
     training_config1 = {
         'criterion': nn.CrossEntropyLoss(),
         'optimizer_class': torch.optim.Adam,
-        'model_paths': ['TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth'],
+        # 'model_paths': ['TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth'],
+        'model_paths': ['testModel/eff4'],
         'train_size': 0.1,
         'num_epochs': 20,
         'batch_size': 64,
@@ -557,13 +560,14 @@ if __name__ == "__main__":
         'graphs': 0,
     }
 
-    # monte_carlo_cross_validation(eff4, data, training_config1, meta_data1, device)
+    monte_carlo_cross_validation(eff4, data, training_config1, meta_data1, device)
 
     # For model denseA3
     training_config1 = {
         'criterion': nn.CrossEntropyLoss(),
         'optimizer_class': torch.optim.Adam,
-        'model_paths': ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth'],
+        # 'model_paths': ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth'],
+        'model_paths': ['testModel/denseA3.pth'],
         'train_size': 0.1,
         'num_epochs': 20,
         'batch_size': 16,
@@ -581,7 +585,8 @@ if __name__ == "__main__":
     training_config1 = {
         'criterion': nn.CrossEntropyLoss(),
         'optimizer_class': torch.optim.Adam,
-        'model_paths': ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth'],
+        # 'model_paths': ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth'],
+        'model_paths': ['testModel/denseB5'],
         'train_size': 0.1,
         'num_epochs': 20,
         'batch_size': 16,

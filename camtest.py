@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
-from camModels import eff3, eff4, denseA3, denseB5
+from camModels import denseA3, denseB5
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -45,4 +45,4 @@ if __name__ == "__main__":
     # inputs for resolution to get different sized CAM maps: '7x7' '14x14' '28x28'
     resolution = '28x28'
 
-    camtest(eff4, image_path, model_path4, resolution)
+    camtest(denseA3, image_path, model_path4, resolution)

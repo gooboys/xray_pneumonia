@@ -63,13 +63,15 @@ class ImageDataset(Dataset):
 
         return image, label
 
-def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit, plot=False):
+def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, model_paths, train_size, num_epochs, batch_size, device, transform, limit, plot=False):
     train_loss_all = []
     val_loss_all = []
     train_accuracy_all = []
     val_accuracy_all = []
     
     models = []  # Store models in memory
+
+    num_splits = len(model_paths)
 
     for split in range(num_splits):
         print(f"Monte Carlo Split {split+1}/{num_splits}")
@@ -168,6 +170,7 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
 
         # Store the best model in memory
         models.append(best_model)
+        torch.save(model.state_dict(), model_paths[split])
     
     # Compute average loss over all splits
     avg_train_loss = [sum(epoch_losses) / num_splits for epoch_losses in zip(*train_loss_all)]
@@ -253,7 +256,6 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 5
     train_size = 0.9
     num_epochs = 13
     batch_size = 32
@@ -263,9 +265,17 @@ if __name__ == "__main__":
     optimizer_class = torch.optim.Adam
     limit = 3
 
+    model_paths = [
+        'TrainedModels/standard1.pth',
+        'TrainedModels/standard2.pth',
+        'TrainedModels/standard3.pth',
+        'TrainedModels/standard4.pth',
+        'TrainedModels/standard5.pth'
+    ]
+
     txt_file = "disease_present.txt"
 
-    report, ROC_score = montecarlo(sCNN, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
+    report, ROC_score = montecarlo(sCNN, train_data, test_data, criterion, optimizer_class, model_paths, train_size, num_epochs, batch_size, device, transform, limit)
     with open(txt_file, "a") as file:
         file.write("oneCNN" + ":\n")
         file.write(report)

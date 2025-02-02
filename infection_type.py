@@ -228,8 +228,12 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
         ensemble_outputs = np.mean(ensemble_outputs, axis=0)
         all_probabilities.extend(ensemble_outputs)
 
+        # Apply custom probability threshold for classification
+        custom_threshold = 0.64   # Adjust based on your needs
+        predicted = (ensemble_outputs[:, 1] > custom_threshold).astype("int32")  # Class 1 if prob > 0.6
+
         # Calculate final predictions
-        predicted = np.argmax(ensemble_outputs, axis=1)
+        # predicted = np.argmax(ensemble_outputs, axis=1)
         all_predictions.extend(predicted)
         all_labels.extend(labels.cpu().numpy())
 
@@ -258,9 +262,9 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 2
+    num_splits = 4
     train_size = 0.9
-    num_epochs = 20
+    num_epochs = 15
     batch_size = 16
     
     # Initialize other parameters

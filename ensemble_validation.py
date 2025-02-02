@@ -61,8 +61,8 @@ The validation set is created using the same random state when sorting out the t
 
 validation_set = the set of data for the validation set
 model_paths = {
-    infection_present_models = ['modelpaths', 'modelpaths', 'etc']
-    infection_type_models = ['modelpaths', 'modelpaths', 'etc']
+    infection_present_models: ['modelpaths', 'modelpaths', 'etc']
+    infection_type_models: ['modelpaths', 'modelpaths', 'etc']
 }
 model_types = {
     'modelpath': model_type,
@@ -71,6 +71,7 @@ model_types = {
     'modelpath': model_type
 }
 '''
+
 def validate_models(validation_set, model_paths, model_types, graphs=True):
     # Extract lists for both ensemble stages
     present_model_paths = model_paths['infection_present_models']
@@ -101,9 +102,10 @@ def validate_models(validation_set, model_paths, model_types, graphs=True):
         is_infected = (np.argmax(avg_outputs_present, axis=1) == 1)
 
         # Second stage: Classify type of infection if present
-        final_predictions = np.zeros(images.shape[0], dtype=int)  # Default: non-infected
+        final_predictions = np.zeros(images.shape[0], dtype=int) # Default: non-infected  np.argmax(avg_outputs_present, axis=1)
 
         if np.any(is_infected):
+            is_infected = torch.tensor(is_infected, device=device, dtype=torch.bool)
             images_infected = images[is_infected]
             ensemble_outputs_type = []
 
@@ -118,7 +120,7 @@ def validate_models(validation_set, model_paths, model_types, graphs=True):
 
             avg_outputs_type = np.mean(ensemble_outputs_type, axis=0)
             type_predictions = np.argmax(avg_outputs_type, axis=1)
-            final_predictions[is_infected] = type_predictions + 1  # Assign correct class labels
+            final_predictions[is_infected.cpu().numpy()] = type_predictions + 1  # Assign correct class labels
 
         all_final_predictions.extend(final_predictions)
         all_labels.extend(labels.cpu().numpy())
@@ -134,9 +136,6 @@ def validate_models(validation_set, model_paths, model_types, graphs=True):
     # Compute Metrics
     conf_matrix = confusion_matrix(all_labels, all_final_predictions)
     class_report = classification_report(all_labels, all_final_predictions, target_names=class_names, digits=4)
-    
-    # Compute AUC-ROC
-    all_labels_one_hot = np.eye(len(class_names))[all_labels]
 
     # Print results
     print(f"Confusion Matrix:\n{conf_matrix}")

@@ -39,18 +39,19 @@ def train_test_split(file_path,test_size):
     # Split the balanced data into training and testing sets with an 80-20 split
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
-    # Copying data for disease type split, removing non-infected cases
-    disease_type_train = train_data[train_data['Labels'] != 0].copy()
-    disease_type_test = test_data[test_data['Labels'] != 0].copy()
-
-    # Changing labels from 1->0 2->1
-    label_mapping = {1:0,2:1}
-    disease_type_train['Labels'] = disease_type_train['Labels'].map(label_mapping)
-    disease_type_test['Labels'] = disease_type_test['Labels'].map(label_mapping)
-
     # Copying data for disease present split
     disease_train = train_data.copy()
     disease_test = test_data.copy()
+
+    # NOTE: Switch between test and train data for different class balancing
+    # Turning both disease cases into one class
+    train_data['Labels'] = train_data['Labels'].apply(lambda x: 1 if x == 2 else x)
+    test_data['Labels'] = test_data['Labels'].apply(lambda x: 1 if x == 2 else x)
+
+    # Verify the class balance
+    print("Training set (disease type) class distribution:\n", train_data['Labels'].value_counts(normalize=True))
+    print("Testing set (disease type) class distribution:\n", test_data['Labels'].value_counts(normalize=True))
+    return train_data, test_data
 
     # Turning both disease cases into one class
     disease_train['Labels'] = disease_train['Labels'].apply(lambda x: 1 if x == 2 else x)
@@ -60,7 +61,7 @@ def train_test_split(file_path,test_size):
     disease_train_min = disease_train['Labels'].value_counts().min()
     disease_test_min = disease_test['Labels'].value_counts().min()
     
-    # Create a balanced sample for each label to achieve roughly 50% of each label in train and test sets
+    # Create a balanced sample for each label to achieve roughly 50% of each label in train and test sets for if disease is present
     disease_train_balanced = pd.concat([
         disease_train[disease_train['Labels'] == label].sample(disease_train_min, random_state=42)
         for label in disease_train['Labels'].unique()
@@ -71,12 +72,11 @@ def train_test_split(file_path,test_size):
     ])
 
     # Verify the class balance
-    print("Training set (disease present) class distribution:\n", disease_type_train['Labels'].value_counts(normalize=True))
-    print("Testing set (disease present) class distribution:\n", disease_type_test['Labels'].value_counts(normalize=True))
     print("Training set (disease type) class distribution:\n", disease_train_balanced['Labels'].value_counts(normalize=True))
     print("Testing set (disease type) class distribution:\n", disease_test_balanced['Labels'].value_counts(normalize=True))
+    return disease_train_balanced, disease_test_balanced
 
-    return disease_type_train, disease_type_test, disease_train_balanced, disease_test_balanced
+    
 
 # Define the custom Dataset class to handle image loading
 class ImageDataset(Dataset):
@@ -284,10 +284,10 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, m
 
 if __name__ == "__main__":
      # csv file containing [Path, Label] for each normalized image
-    csv_file = 'infection_labels.csv'
+    csv_file = 'Normalized_Image_Paths.csv'
    
     # Split the data into training and testing (80-20) while maintaining balanced classes
-    a, b, train_data, test_data = train_test_split(csv_file, 0.1)
+    train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
     train_size = 0.9

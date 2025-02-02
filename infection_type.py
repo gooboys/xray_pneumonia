@@ -18,7 +18,7 @@ from models import (
     mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
 )
 from expModels import (
-    tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21, tDenseA31, teff41, teff42, teff43, teff44
+    tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21, tDenseA31, teff41, teff42, teff43
 )
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
@@ -86,8 +86,8 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
         train_data, val_data = sk_train_test_split(train_data, train_size=train_size, stratify=train_data['Labels'])
 
         # Initialize a new model for each split
-        model = model_class().to(device)
-        optimizer = optimizer_class(model.parameters(), lr=0.001)
+        model = model_class(0.6196310613745626).to(device)
+        optimizer = optimizer_class(model.parameters(), lr=0.000420675036631029)
 
         # Track training and validation losses
         train_losses = []
@@ -258,15 +258,15 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 40
+    num_splits = 2
     train_size = 0.9
-    num_epochs = 25
-    batch_size = 32
+    num_epochs = 20
+    batch_size = 16
     
     # Initialize other parameters
     criterion = nn.CrossEntropyLoss()
     optimizer_class = torch.optim.Adam
-    limit = 3
+    limit = 10
 
     txt_file = "xModels.txt"
 
@@ -274,12 +274,12 @@ if __name__ == "__main__":
 
     # List of model objects
     models = [
-        tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21, tDenseA31, teff41, teff42, teff43, teff44
+        denseA3
     ]
 
     # List of model names as strings
     model_names = [
-        'tDenseA3', 'tDenseA5', 'tDenseB4', 'teff4', 'teff5', 'tMobileV21', 'tDenseA31', 'teff41', 'teff42', 'teff43', 'teff44'
+        'denseA3'
     ]
     # models = [denseA5]
     # model_names = ["denseA5"]
@@ -288,8 +288,8 @@ if __name__ == "__main__":
     
     for model, name in models_and_names:
         report, ROC_score = montecarlo(model, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-        with open(txt_file, "a") as file:
-            file.write(name + ":\n")
-            file.write(report)
-            file.write(f"ROC Score: {ROC_score}")
-            file.write("\n")
+        # with open(txt_file, "a") as file:
+        #     file.write(name + ":\n")
+        #     file.write(report)
+        #     file.write(f"ROC Score: {ROC_score}")
+        #     file.write("\n")

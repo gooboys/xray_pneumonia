@@ -82,7 +82,7 @@ specs = {
     'limit': limit
 }
 '''
-def montecarlo(model_class, data, specs, custom_threshold, learn, plot=False):
+def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plot=False):
     train_data = data['train_data']
     test_data = data['test_data']
 
@@ -113,7 +113,11 @@ def montecarlo(model_class, data, specs, custom_threshold, learn, plot=False):
         train_data, val_data = sk_train_test_split(train_data, train_size=train_size, stratify=train_data['Labels'])
 
         # Initialize a new model for each split
-        model = model_class().to(device)
+        model = None
+        if dropout:
+            model = model_class(dropout).to(device)
+        else:
+            model = model_class().to(device)
         optimizer = optimizer_class(model.parameters(), lr=learn)
 
         # Track training and validation losses
@@ -288,25 +292,25 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 10
+    num_splits = 6
     train_size = 0.9
-    num_epochs = 15
-    batch_size = 16
+    num_epochs = 12
+    batch_size = 64
     
     # Initialize other parameters
     criterion = nn.CrossEntropyLoss()
     optimizer_class = torch.optim.Adam
-    limit = 3
+    limit = 10
 
-    txt_file = "xModels.txt"
+    txt_file = "temp.txt"
 
     # NOTE: Models with flexible dropout rates do not work here
 
     # List of model objects
-    models = [eff3, eff4, transfer, denseB5, mobileV22, mobileV24, denseA3, denseB4, denseB3, denseB1]
+    models = [eff4]
 
     # List of model names as strings
-    model_names = ["eff3", "eff4", "transfer", "denseB5", "mobileV22", "mobileV24", "denseA3", "denseB4", "denseB3", "denseB1"]
+    model_names = ['eff4']
     # models = [denseA5]
     # model_names = ["denseA5"]
 
@@ -325,15 +329,15 @@ if __name__ == "__main__":
         'limit': limit
     }
     
-    learn = 0.001
+    learn = 0.0003230310641011456
 
-    threshholds = [0.45, 0.5, 0.55, 0.6]
+    threshholds = [0.4948481254944485]
 
     for model, name in models_and_names:
         for threshold in threshholds:
-            report, ROC_score = montecarlo(model, data, specs, threshold, learn)
+            report, ROC_score = montecarlo(model, data, specs, threshold, learn, dropout=0.43758211131453006)
             with open(txt_file, "a") as file:
-                file.write(name + ":\n")
+                file.write(name + " " + str(threshold)+ " " + ":\n")
                 file.write(report)
                 file.write(f"ROC Score: {ROC_score}")
                 file.write("\n")

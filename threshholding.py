@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.optim as opt
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
@@ -118,7 +119,12 @@ def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plo
             model = model_class(dropout).to(device)
         else:
             model = model_class().to(device)
-        optimizer = optimizer_class(model.parameters(), lr=learn)
+        
+        # Last parameter of optimizer is optional for L2 regularization, increase value to reduce even more overfitting
+        optimizer = optimizer_class(model.parameters(), lr=learn, weight_decay=1e-3)
+
+        # Comment this out if dynamic LR is not wanted
+        scheduler = opt.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=2, verbose=True)
 
         # Track training and validation losses
         train_losses = []
@@ -186,6 +192,13 @@ def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plo
             
             print(f"Epoch [{epoch+1}/{num_epochs}] - Train Loss: {avg_train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}%, Val Loss: {avg_val_loss:.4f}, Val Accuracy: {val_accuracy:.2f}%")
             
+            # Step the scheduler based on validation loss
+            scheduler.step(avg_val_loss)
+
+            # Print current learning rate
+            current_lr = optimizer.param_groups[0]['lr']
+            print(f"Learning Rate: {current_lr:.6f}")
+
             # Save the best model for the current split
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
@@ -298,7 +311,7 @@ if __name__ == "__main__":
     batch_size = 64
     
     # Initialize other parameters
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.045)
     optimizer_class = torch.optim.Adam
     limit = 10
 
@@ -329,13 +342,13 @@ if __name__ == "__main__":
         'limit': limit
     }
     
-    learn = 0.0003230310641011456
+    learn = 0.0009736960816122808
 
     threshholds = [0.4948481254944485]
 
     for model, name in models_and_names:
         for threshold in threshholds:
-            report, ROC_score = montecarlo(model, data, specs, threshold, learn, dropout=0.43758211131453006)
+            report, ROC_score = montecarlo(model, data, specs, threshold, learn, dropout=0.5007265217094025)
             with open(txt_file, "a") as file:
                 file.write(name + " " + str(threshold)+ " " + ":\n")
                 file.write(report)

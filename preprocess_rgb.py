@@ -26,7 +26,7 @@ def apply_lanczos_with_padding(image, size=(256, 256)):
     resized_image = image.resize((new_width, new_height), Image.LANCZOS)
     
     # Create a new image with the target size and black background (padding)
-    new_image = Image.new('L', size, color=0)  # 'L' for grayscale, color=0 is black
+    new_image = Image.new('RGB', size, color=0)  # 'L' for grayscale, color=0 is black
     
     # Paste the resized image onto the center of the new image
     top = (size[1] - new_height) // 2
@@ -72,6 +72,9 @@ def process_images(positive_train_folder, negative_train_folder, positive_test_f
             try:
                 # Open image
                 with Image.open(image_path) as img:
+                    # Turn to RGB
+                    img = img.convert("RGB")
+
                     normalized_image = apply_lanczos_with_padding(img, size=(224, 224))
                     
                     # Get label based on the image filename

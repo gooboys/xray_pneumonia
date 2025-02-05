@@ -342,7 +342,7 @@ if __name__ == "__main__":
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 5
+    num_splits = 6
     train_size = 0.9
     num_epochs = 15
     batch_size = 32
@@ -381,7 +381,7 @@ if __name__ == "__main__":
     
     learn = 0.001
 
-    threshholds = [0.45,0.5,0.55]
+    threshholds = [0.4,0.45,0.5,0.55,0.6]
 
     for model, name in models_and_names:
         for threshold in threshholds:

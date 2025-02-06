@@ -50,6 +50,38 @@ def train_test_split(file_path,test_size):
 
     return train_data, test_data
 
+def train_test_split1(file_path,test_size):
+    # Load the data
+    data = pd.read_csv(file_path)
+
+    # Check the label distribution
+    label_counts = data['Labels'].value_counts()
+    min_class_count = label_counts.min()
+   
+    # Create a balanced sample for each label to achieve roughly 33.3% of each label in train and test sets
+    data_balanced = pd.concat([
+        data[data['Labels'] == label].sample(min_class_count, random_state=42)
+        for label in data['Labels'].unique()
+    ])
+
+    # Split the balanced data into training and testing sets with an 80-20 split
+    train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
+
+
+    train_data = train_data[train_data['Labels'] != 0].copy()
+    test_data = test_data[test_data['Labels'] != 0].copy()
+
+
+    label_mapping = {1:0,2:1}
+    train_data['Labels'] = train_data['Labels'].map(label_mapping)
+    test_data['Labels'] = test_data['Labels'].map(label_mapping)
+
+    # Verify the class balance
+    print("Training set class distribution:\n", train_data['Labels'].value_counts(normalize=True))
+    print("Testing set class distribution:\n", test_data['Labels'].value_counts(normalize=True))
+
+    return train_data, test_data
+
 # Define the custom Dataset class to handle image loading
 class ImageDataset(Dataset):
     def __init__(self, data, transform=None):
@@ -83,7 +115,7 @@ specs = {
     'limit': limit
 }
 '''
-def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plot=False):
+def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plot=False, save_models = False):
     train_data = data['train_data']
     test_data = data['test_data']
 
@@ -217,6 +249,8 @@ def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plo
 
         # Store the best model in memory
         models.append(best_model)
+        if save_models:
+            torch.save(model.state_dict(), save_models[split])
     
     # Compute average loss over all splits
     avg_train_loss = [sum(epoch_losses) / num_splits for epoch_losses in zip(*train_loss_all)]
@@ -299,35 +333,66 @@ def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plo
 
 if __name__ == "__main__":
     # csv file containing [Path, Label] for each normalized image
-    csv_file = 'infection_type_labels.csv'
-   
+    # csv_file = 'infection_type_labels.csv'
+    csv_file = 'Normalized_Image_Paths.csv'
+
     # Split the data into training and testing (80-20) while maintaining balanced classes
-    train_data, test_data = train_test_split(csv_file, 0.1)
+    train_data, test_data = train_test_split1(csv_file, 0.1)
    
     # Initialize hyperparameters
-    num_splits = 6
+    num_splits = 4
     train_size = 0.9
     num_epochs = 12
+
+    # denseB5
+    # learn = 0.0004355666381799594
+    # threshholds = [0.5]
+    # dropout = 0.3488616602654536
+    # model_names = ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth']
+    # batch_size = 16
+    # # Initialize other parameters
+    # smoothing = 0.038
+    # criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
+    # optimizer_class = torch.optim.Adam
+    # limit = 4
+    # txt_file = "temp2.txt"
+
+    # denseA3
+    # learn = 0.000420675036631029
+    # threshholds = [0.5]
+    # dropout = 0.6196310613745626
+    # model_names = ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth']
+    # batch_size = 16
+    # # Initialize other parameters
+    # smoothing = 0.038
+    # criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
+    # optimizer_class = torch.optim.Adam
+    # limit = 4
+    # txt_file = "temp2.txt"
+
+    # eff4
+    learn =  0.0009736960816122808
+    threshholds = [0.5]
+    dropout = 0.5007265217094025
+    model_names = ['TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth']
     batch_size = 64
-    
     # Initialize other parameters
-    criterion = nn.CrossEntropyLoss(label_smoothing=0.045)
+    smoothing = 0.04
+    criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
     optimizer_class = torch.optim.Adam
-    limit = 10
+    limit = 4
+    txt_file = "temp2.txt"
 
-    txt_file = "temp.txt"
 
-    # NOTE: Models with flexible dropout rates do not work here
 
     # List of model objects
     models = [eff4]
 
     # List of model names as strings
-    model_names = ['eff4']
-    # models = [denseA5]
-    # model_names = ["denseA5"]
+    modelnames = ['eff4']
 
-    models_and_names = zip(models,model_names)
+
+    models_and_names = zip(models,modelnames)
 
     data = {'train_data': train_data, 'test_data': test_data}
     specs = {
@@ -341,16 +406,16 @@ if __name__ == "__main__":
         'transform': transform,
         'limit': limit
     }
-    
-    learn = 0.0009736960816122808
-
-    threshholds = [0.4948481254944485]
 
     for model, name in models_and_names:
         for threshold in threshholds:
-            report, ROC_score = montecarlo(model, data, specs, threshold, learn, dropout=0.5007265217094025)
-            with open(txt_file, "a") as file:
-                file.write(name + " " + str(threshold)+ " " + ":\n")
-                file.write(report)
-                file.write(f"ROC Score: {ROC_score}")
-                file.write("\n")
+            report, ROC_score = montecarlo(model, data, specs, threshold, learn, dropout=dropout, save_models=model_names) #5007265217094025
+            # with open(txt_file, "a") as file:
+            #     file.write(name + ":\n")
+            #     file.write('threshhold: ' + str(threshold) + ":\n")
+            #     file.write('dropout: '+ str(dropout) + ":\n")
+            #     file.write('lr: ' + str(learn) + ":\n")
+            #     file.write('smoothing: ' + str(smoothing) + ":\n")
+            #     file.write(report)
+            #     file.write(f"ROC Score: {ROC_score}")
+            #     file.write("\n")

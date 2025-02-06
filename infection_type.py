@@ -26,6 +26,7 @@ transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
+# This train_test_split creates 2 sets of train/test for the binary classification breakdowns, takes in 'Normalized_Image_Paths.csv'
 def train_test_split(file_path,test_size):
     # Load the data
     data = pd.read_csv(file_path)
@@ -43,11 +44,57 @@ def train_test_split(file_path,test_size):
     # Split the balanced data into training and testing sets with an 80-20 split
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
-    # Verify the class balance
-    print("Training set class distribution:\n", train_data['Labels'].value_counts(normalize=True))
-    print("Testing set class distribution:\n", test_data['Labels'].value_counts(normalize=True))
+    # Copying data for disease type split, removing non-infected cases
+    disease_type_train = train_data[train_data['Labels'] != 0].copy()
+    disease_type_test = test_data[test_data['Labels'] != 0].copy()
 
-    return train_data, test_data
+    # Changing labels from 1->0 2->1
+    label_mapping = {1:0,2:1}
+    disease_type_train['Labels'] = disease_type_train['Labels'].map(label_mapping)
+    disease_type_test['Labels'] = disease_type_test['Labels'].map(label_mapping)
+
+    # Copying data for disease present split
+    disease_train = train_data.copy()
+    disease_test = test_data.copy()
+
+    # Turning both disease cases into one class
+    disease_train['Labels'] = disease_train['Labels'].apply(lambda x: 1 if x == 2 else x)
+    disease_test['Labels'] = disease_test['Labels'].apply(lambda x: 1 if x == 2 else x)
+
+    # Check the label distribution
+    disease_train_min = disease_train['Labels'].value_counts().min()
+    disease_test_min = disease_test['Labels'].value_counts().min()
+    
+    # Create a balanced sample for each label to achieve roughly 50% of each label in train and test sets
+    disease_train_balanced = pd.concat([
+        disease_train[disease_train['Labels'] == label].sample(disease_train_min, random_state=42)
+        for label in disease_train['Labels'].unique()
+    ])
+    disease_test_balanced = pd.concat([
+        disease_test[disease_test['Labels'] == label].sample(disease_test_min, random_state=42)
+        for label in disease_test['Labels'].unique()
+    ])
+
+    # # Verify the class balance
+    # print("Training set (disease present) class distribution:\n", disease_type_train['Labels'].value_counts(normalize=True))
+    # print("Testing set (disease present) class distribution:\n", disease_type_test['Labels'].value_counts(normalize=True))
+    # print("Training set (disease type) class distribution:\n", disease_train_balanced['Labels'].value_counts(normalize=True))
+    # print("Testing set (disease type) class distribution:\n", disease_test_balanced['Labels'].value_counts(normalize=True))
+
+    # # Display sample rows from each dataset
+    # print("\nSample rows from disease_type_train:")
+    # print(disease_type_train.sample(5, random_state=42))
+
+    # print("\nSample rows from disease_type_test:")
+    # print(disease_type_test.sample(5, random_state=42))
+
+    # print("\nSample rows from disease_train_balanced:")
+    # print(disease_train_balanced.sample(5, random_state=42))
+
+    # print("\nSample rows from disease_test_balanced:")
+    # print(disease_test_balanced.sample(5, random_state=42))
+
+    return disease_type_train, disease_type_test
 
 # Define the custom Dataset class to handle image loading
 class ImageDataset(Dataset):
@@ -256,7 +303,7 @@ def montecarlo(model_class, train_data, test_data, criterion, optimizer_class, n
 
 if __name__ == "__main__":
     # csv file containing [Path, Label] for each normalized image
-    csv_file = 'infection_type_labels.csv'
+    csv_file = 'Normalized_Image_Paths.csv'
    
     # Split the data into training and testing (80-20) while maintaining balanced classes
     train_data, test_data = train_test_split(csv_file, 0.1)

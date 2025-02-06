@@ -11,7 +11,7 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_auc_sco
 import matplotlib.pyplot as plt
 # from models import eff3, eff4, denseA3, denseB5
 from camModels import denseA3, denseB5
-from models import standardCNN
+from models import standardCNN, eff4
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -119,7 +119,11 @@ def validate_models(validation_set, model_paths, model_types, graphs=True):
                     ensemble_outputs_type.append(F.softmax(outputs, dim=1).cpu().numpy())
 
             avg_outputs_type = np.mean(ensemble_outputs_type, axis=0)
-            type_predictions = np.argmax(avg_outputs_type, axis=1)
+
+            # Switch between argmax and custom threshhold, comment out one
+            # type_predictions = np.argmax(avg_outputs_type, axis=1)
+            type_predictions = (avg_outputs_type[:, 1] > 0.54).astype("int32")
+            
             final_predictions[is_infected.cpu().numpy()] = type_predictions + 1  # Assign correct class labels
 
         all_final_predictions.extend(final_predictions)
@@ -153,20 +157,17 @@ if __name__ == "__main__":
     model_paths = {
         'infection_present_models': ['TrainedModels/standard1.pth','TrainedModels/standard2.pth','TrainedModels/standard3.pth',
                                      'TrainedModels/standard4.pth','TrainedModels/standard5.pth'],
-        'infection_type_models': ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth',
-                                #   'TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth'
+        'infection_type_models': [
+                                'TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth',
+                                'TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth',
+                                'TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth'
         ]
     }
 
     model_types = {
-        'TrainedModels/denseA31.pth': denseA3,
-        'TrainedModels/denseA32.pth': denseA3,
-        'TrainedModels/denseA33.pth': denseA3,
-        'TrainedModels/denseA34.pth': denseA3,
-        # 'TrainedModels/denseB51.pth': denseB5,
-        # 'TrainedModels/denseB52.pth': denseB5,
-        # 'TrainedModels/denseB53.pth': denseB5,
-        # 'TrainedModels/denseB54.pth': denseB5
+        'TrainedModels/denseA31.pth': denseA3,'TrainedModels/denseA32.pth': denseA3,'TrainedModels/denseA33.pth': denseA3,'TrainedModels/denseA34.pth': denseA3,
+        'TrainedModels/eff41.pth': eff4,'TrainedModels/eff42.pth': eff4,'TrainedModels/eff43.pth': eff4,'TrainedModels/eff44.pth': eff4,
+        'TrainedModels/denseB51.pth': denseB5,'TrainedModels/denseB52.pth': denseB5,'TrainedModels/denseB53.pth': denseB5,'TrainedModels/denseB54.pth': denseB5
     }
 
     validate_models(train_data, model_paths, model_types)

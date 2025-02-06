@@ -11,6 +11,7 @@ from PIL import ImageEnhance
 from camModels import denseA3, denseB5, eff4
 from models import standardCNN
 import cv2
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -131,7 +132,7 @@ def camtest(modelType, image_path, model_path, imageClass, resolution):
 
     return cam
 
-def run_ensemble(model_paths, model_types, image_path, CAM, resolution):
+def run_ensemble(model_paths, model_types, image_path, CAM, resolution, blocky = False):
     image = Image.open(image_path).convert("L")
     input_tensor = transform(image).unsqueeze(0).to(device)
    
@@ -158,7 +159,7 @@ def run_ensemble(model_paths, model_types, image_path, CAM, resolution):
         print("Predicted Class (Ensemble): normal")
         print(f"Actual Class: {class_mapping.get(label, 'Unknown')}")
         if CAM:
-            showCAM(heatmaps, [])
+            showCAM(heatmaps, [], image_path)
         return
     
     # Classifying if not no-infection
@@ -197,43 +198,63 @@ def showCAM(disease_present_CAMS, disease_type_CAMS, image_path):
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB format
     
-    # Compute mean heatmaps
+    # Compute mean heatmap for disease presence
     mean_present_CAM = np.mean(disease_present_CAMS, axis=0)
-    mean_type_CAM = np.mean(disease_type_CAMS, axis=0)
-    
-    # Normalize heatmaps to [0, 1] for proper visualization
     mean_present_CAM = (mean_present_CAM - np.min(mean_present_CAM)) / (np.max(mean_present_CAM) - np.min(mean_present_CAM) + 1e-8)
-    mean_type_CAM = (mean_type_CAM - np.min(mean_type_CAM)) / (np.max(mean_type_CAM) - np.min(mean_type_CAM) + 1e-8)
 
-    # Resize heatmaps to match image dimensions
+    # Resize heatmap to match image dimensions
     heatmap_size = (image.shape[1], image.shape[0])
     mean_present_CAM = cv2.resize(mean_present_CAM, heatmap_size)
-    mean_type_CAM = cv2.resize(mean_type_CAM, heatmap_size)
 
-    # Overlay heatmaps onto the image
+    # Generate overlayed heatmap for disease presence
     heatmap_present = cv2.applyColorMap((mean_present_CAM * 255).astype(np.uint8), cv2.COLORMAP_JET)
-    heatmap_type = cv2.applyColorMap((mean_type_CAM * 255).astype(np.uint8), cv2.COLORMAP_JET)
-
     overlay_present = cv2.addWeighted(image, 0.5, heatmap_present, 0.5, 0)
-    overlay_type = cv2.addWeighted(image, 0.5, heatmap_type, 0.5, 0)
 
-    # Plot results
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-    
+    # Check if disease_type_CAMS exists
+    has_disease_type = len(disease_type_CAMS) > 0
+
+    if has_disease_type:
+        # Compute mean heatmap for disease type
+        mean_type_CAM = np.mean(disease_type_CAMS, axis=0)
+        mean_type_CAM = (mean_type_CAM - np.min(mean_type_CAM)) / (np.max(mean_type_CAM) - np.min(mean_type_CAM) + 1e-8)
+        mean_type_CAM = cv2.resize(mean_type_CAM, heatmap_size)
+
+        # Generate overlayed heatmap for disease type
+        heatmap_type = cv2.applyColorMap((mean_type_CAM * 255).astype(np.uint8), cv2.COLORMAP_JET)
+        overlay_type = cv2.addWeighted(image, 0.5, heatmap_type, 0.5, 0)
+
+    # Create figure with correct number of rows
+    num_rows = 3 if has_disease_type else 2
+    fig, axes = plt.subplots(num_rows, 1, figsize=(5, 4 * num_rows), constrained_layout=True)
+
+    # Function to add a properly formatted colorbar
+    def add_colorbar(ax, im):
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)  # Adjusted padding for vertical layout
+        cbar = fig.colorbar(im, cax=cax, shrink=0.8)  # Keep colorbar compact
+        cbar.set_label("Activation Intensity", fontsize=9, labelpad=6)
+        cbar.ax.tick_params(labelsize=8)
+        cbar.mappable.set_clim(0, 1)  # Normalize colorbar values to [0,1]
+
+    # Original Image
     axes[0].imshow(image)
-    axes[0].set_title("Original Image")
+    axes[0].set_title("Original Image", fontsize=12)
     axes[0].axis("off")
-    
-    axes[1].imshow(overlay_present)
-    axes[1].set_title("Mean Disease Presence CAM")
-    axes[1].axis("off")
 
-    axes[2].imshow(overlay_type)
-    axes[2].set_title("Mean Disease Type CAM")
-    axes[2].axis("off")
+    # Disease Presence CAM with colorbar
+    im1 = axes[1].imshow(overlay_present, cmap="jet", vmin=0, vmax=1)
+    axes[1].set_title("Mean Disease Presence CAM", fontsize=12)
+    axes[1].axis("off")
+    add_colorbar(axes[1], im1)
+
+    # Only show Disease Type CAM if available
+    if has_disease_type:
+        im2 = axes[2].imshow(overlay_type, cmap="jet", vmin=0, vmax=1)
+        axes[2].set_title("Mean Disease Type CAM", fontsize=12)
+        axes[2].axis("off")
+        add_colorbar(axes[2], im2)
 
     plt.show()
-    return
 
 if __name__ == "__main__":
     run = True
@@ -257,7 +278,7 @@ if __name__ == "__main__":
         'TrainedModels/eff41.pth': eff4,'TrainedModels/eff42.pth': eff4,'TrainedModels/eff43.pth': eff4,'TrainedModels/eff44.pth': eff4,
         'TrainedModels/denseB51.pth': denseB5,'TrainedModels/denseB52.pth': denseB5,'TrainedModels/denseB53.pth': denseB5,'TrainedModels/denseB54.pth': denseB5
     }
-    run_ensemble(model_paths, model_types, 'NormalizedXRays/image_0.jpeg', True, '14x14')
+    run_ensemble(model_paths, model_types, 'NormalizedXRays/image_0.jpeg', True, '28x28', blocky=True)
     # while run:
     #     show_menu()
     #     choice = input("Enter your choice (1-5): ").strip()

@@ -37,7 +37,7 @@ class eff4(nn.Module):
     def _hook_fn(self, module, input, output):
         """Hook function to capture feature maps."""
         self.feature_maps = output  # Stores feature maps dynamically during the forward pass
-        print(f"Captured feature map shape: {output.shape}")  # Debugging
+        # print(f"Captured feature map shape: {output.shape}")  # Debugging
 
     def _register_hook(self):
         """Registers the forward hook based on the chosen layer."""
@@ -55,7 +55,7 @@ class eff4(nn.Module):
             raise ValueError("Invalid hook_layer. Choose '7x7', '14x14', or '28x28'.")
 
         target_layer = layer_dict[self.hook_layer]
-        print(f"Hook registered at: {self.hook_layer}")  # Debugging
+        # print(f"Hook registered at: {self.hook_layer}")  # Debugging
         self.hook_handle = target_layer.register_forward_hook(self._hook_fn)
 
     def forward(self, x):

@@ -3,13 +3,14 @@ import torch.nn.functional as F
 from torch import nn
 from torchvision import models
 import matplotlib.pyplot as plt
+from torchvision.models import DenseNet121_Weights
 
 
 class denseA3(nn.Module):
     def __init__(self, dropout_rate=0.5, hook_layer="7x7"):
         super(denseA3, self).__init__()
         # Using a pre-trained DenseNet-121
-        self.densenet = models.densenet121(pretrained=True)
+        self.densenet = models.densenet121(weights=DenseNet121_Weights.IMAGENET1K_V1)
 
         # Modify the first convolutional layer to accept grayscale (1-channel) images
         self.densenet.features.conv0 = nn.Conv2d(

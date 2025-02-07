@@ -4,8 +4,6 @@ from torchvision import transforms
 from PIL import Image
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split as sk_train_test_split
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
 from PIL import ImageEnhance
 from camModels import denseA3, denseB5, eff4
@@ -143,40 +141,252 @@ and binary classification.
 """
 press_to_continue = "Input anything to continue..."
 
+list_model_options = """
+List of Model Performance Options:
+----------------------------------
+1 - DenseNet-121 Transfer Learning Model
+2 - DenseNet-169 Transfer Learning Model
+3 - EfficientNet-B0 Transfer Learning Model
+4 - Ensembled Transfer Learning Model (DenseNet-121, DenseNet-169, EfficientNet-B0)
+5 - Disease Presence Classification Model
+
+Enter the number corresponding to the model performance report you would like to view.
+"""
 denseA3_performance = """
 DenseNet-121 Transfer Learning Model Report
--------------------------------------------
+----------------------------------------------
 Dataset: Pneumonia Classification (Bacterial vs. Viral)
 
-Confusion Matrix:
------------------
+Confusion Matrix (Threshold = 0.53):
+-----------------------------------
        Predicted
          0    1
       -----------
-    0 | 107   42  (Bacterial)
-    1 |  29  121  (Viral)
+    0 | 112   37  (Bacterial)
+    1 |  30  120  (Viral)
 
 Classification Report:
 ----------------------
                Precision    Recall  F1-Score   Support
 ------------------------------------------------------
-Bacterial (0)    0.7868     0.7181    0.7509       149
-Viral (1)        0.7423     0.8067    0.7732       150
+Bacterial (0)    0.7887     0.7517    0.7698       149
+Viral (1)        0.7643     0.8000    0.7818       150
 
 Overall Model Performance:
 --------------------------
-- Accuracy: 76.25%
-- Macro Avg: Precision = 0.7645, Recall = 0.7624, F1-Score = 0.7620
-- Weighted Avg: Precision = 0.7645, Recall = 0.7625, F1-Score = 0.7621
+- Accuracy: **77.59%**
+- ROC-AUC Score: **84.16%**
+- Macro Avg: Precision = 0.7765, Recall = 0.7758, F1-Score = 0.7758
+- Weighted Avg: Precision = 0.7765, Recall = 0.7759, F1-Score = 0.7758
+
+Thresholds & Decision Boundary:
+-------------------------------
+- Default classification threshold: **0.5**
+- Predictions greater than **0.53** are classified as **Viral (1)**
+- Predictions less than or equal to **0.53** are classified as **Bacterial (0)**
 
 Summary:
 --------
-The model demonstrates balanced performance across both bacterial and viral pneumonia classifications. 
-It achieves a slightly higher recall for the viral class (80.67%), meaning it correctly identifies 
-more viral cases than bacterial cases. However, bacterial cases have slightly higher precision (78.68%), 
-indicating fewer false positives. Overall, the model achieves a respectable accuracy of **76.25%**.
-"""
+The EfficientNet-B0 transfer learning model achieves a balanced classification 
+between bacterial and viral pneumonia, with an accuracy of **77.59%** and an 
+**ROC-AUC score of 84.16%**, indicating strong overall discrimination capability.
 
+The bacterial class exhibits slightly higher precision (**78.87%**), reducing 
+false positives, while the viral class achieves higher recall (**80.00%**), 
+capturing more true cases. The model maintains a well-calibrated balance 
+between both classes.
+
+Using a **threshold of 0.5**, the model classifies cases effectively, but 
+adjusting the threshold could optimize performance further based on specific 
+application needs.
+"""
+ensemble_report = """
+Ensembled Transfer Learning Model Report
+----------------------------------------
+Models Used: DenseNet-121, DenseNet-169, EfficientNet-B0
+Dataset: Pneumonia Classification (Bacterial vs. Viral)
+
+Confusion Matrix (Threshold = 0.52):
+-----------------------------------
+       Predicted
+         0    1
+      -----------
+    0 | 120   29  (Bacterial)
+    1 |  30  120  (Viral)
+
+Classification Report:
+----------------------
+               Precision    Recall  F1-Score   Support
+------------------------------------------------------
+Bacterial (0)    0.8000     0.8054    0.8027       149
+Viral (1)        0.8054     0.8000    0.8027       150
+
+Overall Model Performance:
+--------------------------
+- Accuracy: **80.27%**
+- ROC-AUC Score: **86.63%**
+- Macro Avg: Precision = 0.8027, Recall = 0.8027, F1-Score = 0.8027
+- Weighted Avg: Precision = 0.8027, Recall = 0.8027, F1-Score = 0.8027
+
+Thresholds & Decision Boundary:
+-------------------------------
+- Default classification threshold: **0.5**
+- Predictions greater than **0.52** are classified as **Viral (1)**
+- Predictions less than or equal to **0.52** are classified as **Bacterial (0)**
+
+Summary:
+--------
+The ensembled model combines **DenseNet-121, DenseNet-169, and EfficientNet-B0**, leveraging 
+their individual strengths to enhance classification performance. It achieves a balanced 
+classification between bacterial and viral pneumonia, with an accuracy of **80.27%** and an 
+**ROC-AUC score of 86.63%**, indicating strong overall discrimination capability.
+
+Both bacterial and viral classes exhibit near-identical precision, recall, and F1-scores, 
+suggesting a well-calibrated model. The threshold of **0.5** was used for classification, 
+but adjustments could be explored for further optimization.
+
+Ensembling these transfer learning models improves overall robustness and generalization 
+compared to individual models.
+"""
+denseB5_report = """
+DenseNet-169 Transfer Learning Model Report
+-------------------------------------------
+Dataset: Pneumonia Classification (Bacterial vs. Viral)
+
+Confusion Matrix (Threshold = 0.52):
+-----------------------------------
+       Predicted
+         0    1
+      -----------
+    0 | 109   40  (Bacterial)
+    1 |  28  122  (Viral)
+
+Classification Report:
+----------------------
+               Precision    Recall  F1-Score   Support
+------------------------------------------------------
+Bacterial (0)    0.7956     0.7315    0.7622       149
+Viral (1)        0.7531     0.8133    0.7821       150
+
+Overall Model Performance:
+--------------------------
+- Accuracy: **77.26%**
+- ROC-AUC Score: **85.45%**
+- Macro Avg: Precision = 0.7744, Recall = 0.7724, F1-Score = 0.7721
+- Weighted Avg: Precision = 0.7743, Recall = 0.7726, F1-Score = 0.7722
+
+Thresholds & Decision Boundary:
+-------------------------------
+- Default classification threshold: **0.5**
+- Predictions greater than **0.52** are classified as **Viral (1)**
+- Predictions less than or equal to **0.52** are classified as **Bacterial (0)**
+
+Summary:
+--------
+The DenseNet-169 transfer learning model achieves **77.26% accuracy** and an 
+**ROC-AUC score of 85.45%**, showing strong overall performance in distinguishing 
+bacterial and viral pneumonia.
+
+The bacterial class has a slightly higher precision (**79.56%**), minimizing false 
+positives, while the viral class has a higher recall (**81.33%**), ensuring more 
+cases are correctly identified. This suggests the model is slightly more cautious 
+when predicting viral cases.
+
+Using a **threshold of 0.5**, the model effectively classifies cases, though 
+threshold tuning could further optimize performance for specific applications.
+"""
+eff4_report = """
+EfficientNet-B0 Transfer Learning Model Report
+----------------------------------------------
+Dataset: Pneumonia Classification (Bacterial vs. Viral)
+
+Confusion Matrix (Threshold = 0.52):
+------------------------------------
+       Predicted
+         0    1
+      -----------
+    0 | 120   29  (Bacterial)
+    1 |  35  115  (Viral)
+
+Classification Report:
+----------------------
+               Precision    Recall  F1-Score   Support
+------------------------------------------------------
+Bacterial (0)    0.7742     0.8054    0.7895       149
+Viral (1)        0.7986     0.7667    0.7823       150
+
+Overall Model Performance:
+--------------------------
+- Accuracy: **78.60%**
+- ROC-AUC Score: **85.93%**
+- Macro Avg: Precision = 0.7864, Recall = 0.7860, F1-Score = 0.7859
+- Weighted Avg: Precision = 0.7864, Recall = 0.7860, F1-Score = 0.7859
+
+Thresholds & Decision Boundary:
+-------------------------------
+- Default classification threshold: **0.50**
+- Adjusted classification threshold: **0.52**
+- Predictions greater than **0.52** are classified as **Viral (1)**
+- Predictions less than or equal to **0.52** are classified as **Bacterial (0)**
+
+Summary:
+--------
+The EfficientNet-B0 transfer learning model achieves **78.60% accuracy** and an 
+**ROC-AUC score of 85.93%**, showing strong overall discrimination capability.
+
+Compared to the default **0.50 threshold**, an adjusted threshold of **0.52** was 
+used, slightly increasing the model's bias toward bacterial classification. This 
+change resulted in a higher precision for the viral class (**79.86%**) but a slightly 
+lower recall (**76.67%**), indicating fewer false positives at the cost of missing 
+some viral cases.
+
+This suggests that **threshold tuning** can help optimize the model’s performance 
+depending on the specific clinical or research needs.
+"""
+standardCNN_report = """
+Disease Presence Classification Model Report
+--------------------------------------------
+Dataset: Pneumonia Detection (Disease vs. No Disease)
+
+Confusion Matrix (Threshold = 0.5):
+-----------------------------------
+       Predicted
+         0    1
+      -----------
+    0 | 142    7  (No Disease)
+    1 |   5  144  (Disease Present)
+
+Classification Report:
+----------------------
+               Precision    Recall  F1-Score   Support
+------------------------------------------------------
+No Disease (0)   0.9660     0.9530    0.9595       149
+Disease (1)      0.9536     0.9664    0.9600       149
+
+Overall Model Performance:
+--------------------------
+- Accuracy: **95.97%**
+- ROC-AUC Score: **99.04%**
+- Macro Avg: Precision = 0.9598, Recall = 0.9597, F1-Score = 0.9597
+- Weighted Avg: Precision = 0.9598, Recall = 0.9597, F1-Score = 0.9597
+
+Thresholds & Decision Boundary:
+-------------------------------
+- Predictions greater than **0.50** are classified as **Disease Present (1)**
+- Predictions less than or equal to **0.50** are classified as **No Disease (0)**
+
+Summary:
+--------
+The disease presence classification model demonstrates **exceptionally high accuracy (95.97%)** 
+and a **ROC-AUC score of 99.04%**, indicating strong predictive capability. 
+
+Both classes exhibit high precision and recall, with **minimal false positives and false negatives**. 
+The slightly higher recall for the **Disease Present** class (**96.64%**) suggests the model prioritizes 
+correctly identifying diseased cases, making it well-suited for medical screening applications.
+
+Given the **ROC-AUC of 99.04%**, this model provides highly reliable discrimination between diseased 
+and non-diseased cases, though further threshold tuning could refine performance for specific use cases.
+"""
 
 def show_menu():
     print("===========================================")
@@ -502,14 +712,22 @@ if __name__ == "__main__":
             else:
                 print('That is not a valid model. Returning to menu.')
         elif choice == "4":
-            print("List model performance options:")
-            model_number = input("What model performance would you like to see?").strip()
+            model_number = input(list_model_options).strip()
             if model_number == "1":
-                print('the structure')
-            if model_number == "2":
-                print('the structure')
-            if model_number == "3":
-                print('the structure')
+                print(denseA3_performance)
+                input(press_to_continue)
+            elif model_number == "2":
+                print(denseB5_report)
+                input(press_to_continue)
+            elif model_number == "3":
+                print(eff4_report)
+                input(press_to_continue)
+            elif model_number == "4":
+                print(ensemble_report)
+                input(press_to_continue)
+            elif model_number == "5":
+                print(standardCNN_report)
+                input(press_to_continue)
         elif choice == "5":
             print("Thanks for using our model!")
             run = False

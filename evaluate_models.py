@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
@@ -7,8 +6,10 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
+from sklearn.metrics import roc_auc_score, roc_curve
 from camModels import denseA3, denseB5, eff4
 from sklearn.metrics import confusion_matrix, classification_report
+from models import standardCNN
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -91,14 +92,15 @@ class ImageDataset(Dataset):
         return image, float(label)
     
 # Testing function
-def test_models(model_classes, model_paths, dataloader, threshhold = 0):
+def test_models(model_classes, model_paths, dataloader, threshhold=0):
     y_true = []
     y_pred = []
-    
+    y_scores = []  # Stores predicted probabilities for ROC-AUC
+
     for images, labels in dataloader:
         images, labels = images.to(device), labels.to(device)
         ensemble_outputs_present = []
-    
+
         for weights_path in model_paths:
             model_class = model_classes[weights_path]
             model = model_class().to(device)
@@ -107,36 +109,54 @@ def test_models(model_classes, model_paths, dataloader, threshhold = 0):
             with torch.no_grad():
                 outputs = model(images)
                 ensemble_outputs_present.append(F.softmax(outputs, dim=1).cpu().numpy())
-                
+
         # Average predictions for infection presence
         avg_outputs_present = np.mean(ensemble_outputs_present, axis=0)
-        
+        y_scores.extend(avg_outputs_present[:, 1].tolist())  # Store positive class probabilities
+
         if threshhold:
             final_predictions = (avg_outputs_present[:, 1] > threshhold).astype("int32")
         else:
-            final_predictions = np.argmax(avg_outputs_present, axis=1) # Default: non-infected
-        
+            final_predictions = np.argmax(avg_outputs_present, axis=1)  # Default: non-infected
+
         y_pred.extend(final_predictions.tolist())
         y_true.extend(labels.cpu().numpy().tolist())
 
-    # Calculate metrics (accuracy example)
+    # Convert lists to numpy arrays
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
+    y_scores = np.array(y_scores)  # Probabilities for ROC-AUC
+
+    # Compute accuracy
     accuracy = np.mean(y_true == y_pred)
+
+    # Compute ROC-AUC score
+    roc_auc = roc_auc_score(y_true, y_scores)
+
+    # Compute ROC curve
+    fpr, tpr, _ = roc_curve(y_true, y_scores)
 
     # Compute and print the confusion matrix
     conf_matrix = confusion_matrix(y_true, y_pred)
     print("\nConfusion Matrix:\n", conf_matrix)
     print("\nClassification Report:\n", classification_report(y_true, y_pred, digits=4))
     print(f"Accuracy: {accuracy:.4f}")
+    print(f"ROC-AUC Score: {roc_auc:.4f}")
 
 if __name__ == "__main__":
+    # Data preparation is univeral for all testing:
     # csv file containing [Path, Label] for each normalized image
     csv_file = 'Normalized_Image_Paths.csv'
-   
     # Split the data into training and testing (80-20) while maintaining balanced classes
     train_data, test_data, a, b = train_test_split(csv_file, 0.1)
-   
+    val_dataset = ImageDataset(test_data, transform=transform)
+    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+
+    # Dataset for evaluating disease presence model
+    d_val_dataset = ImageDataset(b, transform=transform)
+    d_val_loader = DataLoader(d_val_dataset, batch_size=32, shuffle=False)
+    
+    # BELOW FOR entire model ensemble
     model_paths = [
         'TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth',
         'TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth',
@@ -148,9 +168,42 @@ if __name__ == "__main__":
         'TrainedModels/eff41.pth': eff4,'TrainedModels/eff42.pth': eff4,'TrainedModels/eff43.pth': eff4,'TrainedModels/eff44.pth': eff4,
         'TrainedModels/denseB51.pth': denseB5,'TrainedModels/denseB52.pth': denseB5,'TrainedModels/denseB53.pth': denseB5,'TrainedModels/denseB54.pth': denseB5
     }
+    # BELOW FOR denseNet-121
+    model_paths1 = ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth']    
+    model_types1 = {'TrainedModels/denseA31.pth': denseA3,'TrainedModels/denseA32.pth': denseA3,'TrainedModels/denseA33.pth': denseA3,'TrainedModels/denseA34.pth': denseA3}
+    # BELOW FOR denseNet-169
+    model_paths2 = ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth']
+    model_types2 = {'TrainedModels/denseB51.pth': denseB5,'TrainedModels/denseB52.pth': denseB5,'TrainedModels/denseB53.pth': denseB5,'TrainedModels/denseB54.pth': denseB5}
+    # BELOW FOR EfficientNetB-0
+    model_paths3 = ['TrainedModels/eff41.pth','TrainedModels/eff42.pth','TrainedModels/eff43.pth','TrainedModels/eff44.pth']
+    model_types3 = {'TrainedModels/eff41.pth': eff4,'TrainedModels/eff42.pth': eff4,'TrainedModels/eff43.pth': eff4,'TrainedModels/eff44.pth': eff4}
+    # BELOW FOR disease presence
+    model_paths4 = ['TrainedModels/standard1.pth','TrainedModels/standard2.pth','TrainedModels/standard3.pth','TrainedModels/standard4.pth','TrainedModels/standard5.pth']
+    model_types4 = {'TrainedModels/standard1.pth': standardCNN,'TrainedModels/standard2.pth': standardCNN,'TrainedModels/standard3.pth': standardCNN,'TrainedModels/standard4.pth': standardCNN,'TrainedModels/standard5.pth': standardCNN}
 
-    val_dataset = ImageDataset(test_data, transform=transform)
-    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
-
-
+    # Running for entire model ensemble
+    test_models(model_types, model_paths, val_loader, threshhold = 0.5)
+    test_models(model_types, model_paths, val_loader, threshhold = 0.51)
+    test_models(model_types, model_paths, val_loader, threshhold = 0.52)
     test_models(model_types, model_paths, val_loader, threshhold = 0.53)
+    test_models(model_types, model_paths, val_loader, threshhold = 0.54)
+    # Running for denseNet-121
+    test_models(model_types1, model_paths1, val_loader, threshhold = 0.5)
+    test_models(model_types1, model_paths1, val_loader, threshhold = 0.51)
+    test_models(model_types1, model_paths1, val_loader, threshhold = 0.52)
+    test_models(model_types1, model_paths1, val_loader, threshhold = 0.53)
+    test_models(model_types1, model_paths1, val_loader, threshhold = 0.54)
+    # Running for denseNet-169
+    test_models(model_types2, model_paths2, val_loader, threshhold = 0.5)
+    test_models(model_types2, model_paths2, val_loader, threshhold = 0.51)
+    test_models(model_types2, model_paths2, val_loader, threshhold = 0.52)
+    test_models(model_types2, model_paths2, val_loader, threshhold = 0.53)
+    test_models(model_types2, model_paths2, val_loader, threshhold = 0.54)
+    # Running for EfficientNetB-0
+    test_models(model_types3, model_paths3, val_loader, threshhold = 0.5)
+    test_models(model_types3, model_paths3, val_loader, threshhold = 0.51)
+    test_models(model_types3, model_paths3, val_loader, threshhold = 0.52)
+    test_models(model_types3, model_paths3, val_loader, threshhold = 0.53)
+    test_models(model_types3, model_paths3, val_loader, threshhold = 0.54)
+    # Running for disease presence
+    test_models(model_types4, model_paths4, d_val_loader)

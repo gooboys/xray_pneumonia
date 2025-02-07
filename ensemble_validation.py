@@ -7,11 +7,11 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split as sk_train_test_split
-from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, roc_curve
+from sklearn.metrics import confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 # from models import eff3, eff4, denseA3, denseB5
-from camModels import denseA3, denseB5
-from models import standardCNN, eff4
+from camModels import denseA3, denseB5, eff4
+from models import standardCNN
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -72,7 +72,7 @@ model_types = {
 }
 '''
 
-def validate_models(validation_set, model_paths, model_types, graphs=True):
+def validate_models(validation_set, model_paths, model_types, threshhold = 0.5, graphs=True):
     # Extract lists for both ensemble stages
     present_model_paths = model_paths['infection_present_models']
     type_model_paths = model_paths['infection_type_models']
@@ -122,7 +122,7 @@ def validate_models(validation_set, model_paths, model_types, graphs=True):
 
             # Switch between argmax and custom threshhold, comment out one
             # type_predictions = np.argmax(avg_outputs_type, axis=1)
-            type_predictions = (avg_outputs_type[:, 1] > 0.54).astype("int32")
+            type_predictions = (avg_outputs_type[:, 1] > threshhold).astype("int32")
             
             final_predictions[is_infected.cpu().numpy()] = type_predictions + 1  # Assign correct class labels
 
@@ -170,4 +170,8 @@ if __name__ == "__main__":
         'TrainedModels/denseB51.pth': denseB5,'TrainedModels/denseB52.pth': denseB5,'TrainedModels/denseB53.pth': denseB5,'TrainedModels/denseB54.pth': denseB5
     }
 
-    validate_models(train_data, model_paths, model_types)
+    validate_models(train_data, model_paths, model_types, 0.5)
+    validate_models(train_data, model_paths, model_types, 0.51)
+    validate_models(train_data, model_paths, model_types, 0.52)
+    validate_models(train_data, model_paths, model_types, 0.53)
+    validate_models(train_data, model_paths, model_types, 0.54)

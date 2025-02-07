@@ -143,6 +143,40 @@ and binary classification.
 """
 press_to_continue = "Input anything to continue..."
 
+denseA3_performance = """
+DenseNet-121 Transfer Learning Model Report
+-------------------------------------------
+Dataset: Pneumonia Classification (Bacterial vs. Viral)
+
+Confusion Matrix:
+-----------------
+       Predicted
+         0    1
+      -----------
+    0 | 107   42  (Bacterial)
+    1 |  29  121  (Viral)
+
+Classification Report:
+----------------------
+               Precision    Recall  F1-Score   Support
+------------------------------------------------------
+Bacterial (0)    0.7868     0.7181    0.7509       149
+Viral (1)        0.7423     0.8067    0.7732       150
+
+Overall Model Performance:
+--------------------------
+- Accuracy: 76.25%
+- Macro Avg: Precision = 0.7645, Recall = 0.7624, F1-Score = 0.7620
+- Weighted Avg: Precision = 0.7645, Recall = 0.7625, F1-Score = 0.7621
+
+Summary:
+--------
+The model demonstrates balanced performance across both bacterial and viral pneumonia classifications. 
+It achieves a slightly higher recall for the viral class (80.67%), meaning it correctly identifies 
+more viral cases than bacterial cases. However, bacterial cases have slightly higher precision (78.68%), 
+indicating fewer false positives. Overall, the model achieves a respectable accuracy of **76.25%**.
+"""
+
 
 def show_menu():
     print("===========================================")

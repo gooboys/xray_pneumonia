@@ -149,6 +149,7 @@ List of Model Performance Options:
 3 - EfficientNet-B0 Transfer Learning Model
 4 - Ensembled Transfer Learning Model (DenseNet-121, DenseNet-169, EfficientNet-B0)
 5 - Disease Presence Classification Model
+6 - Full Ensembled Pneumonia Classification Model (Normal vs. Bacterial vs. Viral)
 
 Enter the number corresponding to the model performance report you would like to view.
 """
@@ -386,6 +387,60 @@ correctly identifying diseased cases, making it well-suited for medical screenin
 
 Given the **ROC-AUC of 99.04%**, this model provides highly reliable discrimination between diseased 
 and non-diseased cases, though further threshold tuning could refine performance for specific use cases.
+"""
+fullEnsemble_report = """
+Full Pneumonia Classification Model Report
+------------------------------------------
+Dataset: Pneumonia Diagnosis (Normal vs. Bacterial vs. Viral)
+
+Confusion Matrix:
+-----------------
+       Predicted
+         NORMAL  BACTERIA  VIRUS
+      --------------------------------
+  NORMAL   |  142      1       6
+BACTERIA   |    1    123      25
+   VIRUS   |    6     33     111
+
+Classification Report:
+----------------------
+              Precision    Recall  F1-Score   Support
+------------------------------------------------------
+     NORMAL     0.9530     0.9530    0.9530       149
+   BACTERIA     0.7834     0.8255    0.8039       149
+      VIRUS     0.7817     0.7400    0.7603       150
+
+Overall Model Performance:
+--------------------------
+- Accuracy: **83.93%**
+- Macro Avg: Precision = 0.8394, Recall = 0.8395, F1-Score = 0.8391
+- Weighted Avg: Precision = 0.8393, Recall = 0.8393, F1-Score = 0.8389
+
+Thresholds & Decision Boundary:
+-------------------------------
+- **Infection Presence Classification (Normal vs. Infected)**: Threshold = **0.50**
+  - Predictions greater than **0.50** are classified as **Infected (Bacterial or Viral).**
+  - Predictions less than or equal to **0.50** are classified as **Normal.**
+  
+- **Disease Type Classification (Bacterial vs. Viral)**: Threshold = **0.54**
+  - If classified as **Infected**, the model uses a second threshold of **0.54**.
+  - The class with the highest confidence score above **0.54** is selected.
+
+Summary:
+--------
+This pneumonia classification model operates in **two stages**:
+1. **Infection Presence Classification (Threshold = 0.50)**:
+   - Determines whether a patient has pneumonia (Bacterial/Viral) or is Normal.
+2. **Disease Type Classification (Threshold = 0.54)**:
+   - If pneumonia is detected, the model classifies it as **Bacterial or Viral**.
+
+- **Normal cases** are identified with **95.30% precision and recall**, ensuring high confidence in non-infected predictions.
+- **Bacterial cases** show an **82.55% recall**, meaning most bacterial infections are correctly classified.
+- **Viral cases** have a slightly lower **74.00% recall**, suggesting some viral cases are misclassified as bacterial.
+
+By using **two different thresholds**, this model optimizes classification performance while maintaining a balance 
+between precision and recall. Further fine-tuning of these thresholds may improve classification accuracy depending 
+on clinical needs.
 """
 
 def show_menu():
@@ -728,6 +783,11 @@ if __name__ == "__main__":
             elif model_number == "5":
                 print(standardCNN_report)
                 input(press_to_continue)
+            elif model_number == "6":
+                print(fullEnsemble_report)
+                input(press_to_continue)
+            else:
+                print('That is not a valid option. Returning to menu.')
         elif choice == "5":
             print("Thanks for using our model!")
             run = False

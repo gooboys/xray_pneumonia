@@ -9,7 +9,31 @@ This repository explores the potential of deep learning in classifying pneumonia
 - **Bacterial vs. Viral Classification:** **0.88 AUC-ROC**
 
 ---
+## **Requirements**
 
+This project requires the following dependencies:
+
+- **Python 3.9.20** (Recommended)
+- **PyTorch**
+- **NumPy**
+- **Pandas**
+- **OpenCV**
+- **Matplotlib**
+
+To set up the environment, you can create a virtual environment and install the required dependencies:
+
+```bash
+python3.9 -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+```
+
+Then, install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
 ## **Project Structure**
 
 ### **Models**
@@ -123,9 +147,10 @@ The `camModels` folder in `main` contains the **finalized models**. The only fin
 
 ## **Model & Data Storage Information**
 
+- **Dataset Reference**: The dataset used in this project is the ChestXRay dataset from [Mendely Data](https://data.mendeley.com/datasets/rscbjbr9sj/2). Users must download the dataset separately before running the code.
 - **Model files (`.pth`) and CSV datasets are not stored in this repository** due to size constraints and reproducibility considerations.
 - To use the models, **train them locally**.
-- The **Jupyter Notebook (`analysis.ipynb`) relies on pretrained models** and does not perform training to reduce computational overhead.
+- The **Jupyter Notebook (`analysis.ipynb`) relies on pretrained models and preprocessed datasets**. It does not perform training or preprocessing to reduce computational overhead.
 
 ---
 

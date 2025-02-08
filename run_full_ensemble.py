@@ -661,6 +661,7 @@ def run_ensemble(model_paths, model_types, image_path, CAM, resolution = '7x7'):
         showCAM(heatmaps, type_heatmaps, image_path)
     return
 
+# Uses Bilateral Interpolation
 def showCAM(disease_present_CAMS, disease_type_CAMS, image_path):
     # Load the original image
     image = cv2.imread(image_path)

@@ -144,7 +144,7 @@ def test_models(model_classes, model_paths, dataloader, threshhold=0):
     print(f"ROC-AUC Score: {roc_auc:.4f}")
 
 if __name__ == "__main__":
-    # Data preparation is univeral for all testing:
+    # Data preparation is universal for testing all binary models
     # csv file containing [Path, Label] for each normalized image
     csv_file = 'Normalized_Image_Paths.csv'
     # Split the data into training and testing (90-10) while maintaining balanced classes

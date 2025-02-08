@@ -1,55 +1,104 @@
-This repository examines the potential of neural networks in image classification of X-Ray scans to various pneumonia diagnosis (no infection, bacterial infection, and viral infection). In this code, we examine several models and look into various depths of XAI using CAM (Class Activation Maps). 
+# **Pneumonia Diagnosis via X-Ray Image Classification**
 
-The models are able to achieve 99% AUC-ROC for classification of infection presence vs. no infection, 0.93 AUC-ROC for full classification, and 88% AUC-ROC for bacterial vs. viral classification.
+This repository explores the potential of deep learning in classifying pneumonia from X-ray scans. The models classify images into three categories: **no infection, bacterial infection, and viral infection**. Additionally, we investigate **explainable AI (XAI)** using **Class Activation Maps (CAMs)**.
 
-Refer to branch container for the unorganized code. This code contains files not present in the main branch. These files were used largely for experiments and the unsucessful ones that are not of high importance are not included in the main branch.
+## **Performance Summary**
+- **Infection vs. No Infection:** **0.99 AUC-ROC**
+- **Three-Class Classification (No Infection, Bacterial, Viral):** **0.93 AUC-ROC**
+- **Bacterial vs. Viral Classification:** **0.88 AUC-ROC**
 
-Several of the files present in main branch do not need to be run for the program to run correctly.
+---
 
-There are two models and two containers (one for each). The first model is a bagging model of a singular deep neural network structure. This performs classification of the three classes. The second model is also an ensemble combining two binary classifications. This model performs slightly better, it uses the same deep learning model for the disease presence classification (except the output layer is 2 nodes rather than 3) and leverages 3 different transfer learning models for the disease type classification.
+## **Project Structure**
 
-There are three transfer learning models, they are referred to as denseA3, denseB5, and eff4 in the code. The denseA3 model uses the densenet-121 architecture, the denseB5 uses the densenet-169 architecture, and the eff4 model uses the efficientnet-B0 architecture.
+### **Models**
+There are **two primary models** and **two model containers** (one for each approach):
 
-To run the entire program run in this order:
-1. analysis.py:
-    Run this to see the analysis of the data, optional and the remaining code can run without this process.
+1. **First Model (Single-Model Ensemble)**
+   - A bagging ensemble of a single deep neural network structure.
+   - Performs **three-class classification** (no infection, bacterial, viral).
 
-2. preprocessing.py:
-    Run this to preprocess the data and generate a CSV file with image paths and labels. This is done rather than storing all the images in a variable and passing it into a function. This saves on computer efficiency and runtime.
+2. **Second Model (Two-Step Binary Classification)**
+   - A pipeline of two separate binary classifiers:
+     - **First stage:** Classifies **infection vs. no infection**.
+     - **Second stage:** If infection is present, classifies **bacterial vs. viral**.
+   - Uses the **same deep learning model** for the first stage but with a **two-node output layer**.
+   - Utilizes **three different transfer learning models** for the second-stage classification:
+     - `denseA3` → **DenseNet-121**
+     - `denseB5` → **DenseNet-169**
+     - `eff4` → **EfficientNet-B0**
 
-3. ensemble_model.py:
-    Run this to create the ensemble of models used in the first ensemble model
+### **Branches**
+- **`main` branch:** Contains the finalized, core code for running models.
+- **`container` branch:** Holds additional files, experimental models, and unsuccessful approaches not included in `main`.
 
-4. run_ensemble.py:
-    Run this file to run the first ensemble model on any specific images and view Class Activation maps
+---
 
-5. infection_present.py:
-    Run this file to get the first binary classification in the second ensemble model
+## **Running the Project**
+To execute the models, follow this sequence:
 
-6. threshholding.py:
-    Run this file to get the second binary classification in the second ensemble model
+1. **`analysis.py`** *(Optional)*
+   - Analyzes the dataset.
 
-7. run_full_ensemble.py:
-    Run this file run the entire second ensemble model.
+2. **`preprocessing.py`**
+   - Prepares the dataset by generating a CSV file with image paths and labels.
+   - **Optimized for efficiency** by avoiding storing all images in memory.
 
+3. **`ensemble_model.py`**
+   - Trains the first ensemble model.
 
-All other files were used in this study however do not necessarily contribute to the final result.
-Bayesian_optimization.py:
-    This file was used to run the original bayesian optimization measuring the metrics of learning rate, batch-size, and dropout rate together. The optimal learning rates, batch sizes, and dropout rates were eventually used in the final models.
+4. **`run_ensemble.py`**
+   - Runs the first ensemble model and generates **Class Activation Maps (CAMs).**
 
-Bayesian_threshhold.py:
-    This file was another bayesian optimization using the parameters learning rate, dropout, and threshhold rate for model classifications. This did not end up yielding any valuable results.
+5. **`infection_present.py`**
+   - Runs the **first binary classification** of the second ensemble model (infection presence detection).
 
-camtest.py:
-    This file can be used to directly generate Class Activation Maps (CAMs) from model type and model number. This file was used to test the efficacy of the CAM model.
+6. **`threshholding.py`**
+   - Runs the **second binary classification** of the second ensemble model (bacterial vs. viral detection).
 
-ensemble_validation.py:
-    This file was used to figure out how to build the entire ensemble with sequential binary classification. It was also used to generate the metrics for the models accuracy, F-1 score, recall, etc. etc.
+7. **`run_full_ensemble.py`**
+   - Executes the entire **two-step ensemble model**.
 
-evaluate_models.py:
-    This file was used to get the metrics of trained models individually without needing to retrain a new model. Identical random_states were always used to ensure no data leakage (I wasted a day thinking I was done due to data leakage)
+---
 
-infection_type.py:
-    This file was used to test various binary classification of disease types before threshholding, L2-regularization, and many other techniques were utilized.
+## **Supplementary Files**
+These files were used for experimentation, debugging, or validation but are **not required** to run the final models.
 
-Other files which were not included in this repo, but can be found in container branch. They include the preprocessing for RGB images, tests for RGB images, various models with a single output layer, the experiments for models with a singular layer, and other models with slight variations from those existing in the models folder. However the models folder contains pretty much all of the models which were experimented on.
+- **`Bayesian_optimization.py`**  
+  - Tuned **learning rate, batch size, and dropout rate** using Bayesian optimization.
+  - Results were used for final model hyperparameters.
+
+- **`Bayesian_threshhold.py`**  
+  - Similar to the above but included **threshold rate** in optimization.
+  - Did not yield valuable results.
+
+- **`camtest.py`**  
+  - Directly generates **Class Activation Maps (CAMs)** from a selected model.
+
+- **`ensemble_validation.py`**  
+  - Developed and validated the **sequential binary classification approach**.
+  - Generated accuracy, F1-score, recall, and other metrics.
+
+- **`evaluate_models.py`**  
+  - Evaluated trained models without retraining.
+  - Ensured **no data leakage** (after mistakenly assuming the model was finalized due to leakage).
+
+- **`infection_type.py`**  
+  - Early testing of **binary classification of infection types** before adding thresholding, L2 regularization, and other enhancements.
+
+---
+
+## **Additional Experiments (Stored in `container` branch)**
+Files in the `container` branch include:
+- Preprocessing and models for **RGB images**.
+- Various **single-layer models** and experiments.
+- Alternative **ensemble configurations**.
+- Other variations not included in `main`.
+
+The `models` folder in `main` contains most of the **finalized and near-final models**.
+
+---
+
+## **Conclusion**
+This project demonstrates the effectiveness of deep learning in **pneumonia classification** and **XAI visualization**. The best-performing approach leverages **ensemble learning and transfer learning**, achieving strong performance in differentiating **no infection, bacterial, and viral pneumonia**.
+

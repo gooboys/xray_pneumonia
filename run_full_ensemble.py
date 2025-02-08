@@ -12,7 +12,8 @@ import cv2
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 '''
-This file runs the ensemble model for the 
+This file runs the ensemble model for the dual-binary classification. Please check the order of files which need
+to be run in the README.md file for this container to work.
 '''
 
 # Check if a GPU is available and set the device accordingly

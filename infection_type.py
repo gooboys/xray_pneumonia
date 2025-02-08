@@ -24,7 +24,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # This train_test_split creates 2 sets of train/test for the binary classification breakdowns, takes in 'Normalized_Image_Paths.csv'
-def train_test_split(file_path,test_size):
+def train_test_split(file_path,test_size, printy=False):
     # Load the data
     data = pd.read_csv(file_path)
 
@@ -38,7 +38,7 @@ def train_test_split(file_path,test_size):
         for label in data['Labels'].unique()
     ])
 
-    # Split the balanced data into training and testing sets with an 80-20 split
+    # Split the balanced data into training and testing sets with a split based on test_size
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
     # Copying data for disease type split, removing non-infected cases
@@ -72,24 +72,25 @@ def train_test_split(file_path,test_size):
         for label in disease_test['Labels'].unique()
     ])
 
-    # # Verify the class balance
-    # print("Training set (disease present) class distribution:\n", disease_type_train['Labels'].value_counts(normalize=True))
-    # print("Testing set (disease present) class distribution:\n", disease_type_test['Labels'].value_counts(normalize=True))
-    # print("Training set (disease type) class distribution:\n", disease_train_balanced['Labels'].value_counts(normalize=True))
-    # print("Testing set (disease type) class distribution:\n", disease_test_balanced['Labels'].value_counts(normalize=True))
+    # Verify the class balance
+    if printy:
+        print("Training set (disease present) class distribution:\n", disease_type_train['Labels'].value_counts(normalize=True))
+        print("Testing set (disease present) class distribution:\n", disease_type_test['Labels'].value_counts(normalize=True))
+        print("Training set (disease type) class distribution:\n", disease_train_balanced['Labels'].value_counts(normalize=True))
+        print("Testing set (disease type) class distribution:\n", disease_test_balanced['Labels'].value_counts(normalize=True))
 
-    # # Display sample rows from each dataset
-    # print("\nSample rows from disease_type_train:")
-    # print(disease_type_train.sample(5, random_state=42))
+        # Display sample rows from each dataset
+        print("\nSample rows from disease_type_train:")
+        print(disease_type_train.sample(5, random_state=42))
 
-    # print("\nSample rows from disease_type_test:")
-    # print(disease_type_test.sample(5, random_state=42))
+        print("\nSample rows from disease_type_test:")
+        print(disease_type_test.sample(5, random_state=42))
 
-    # print("\nSample rows from disease_train_balanced:")
-    # print(disease_train_balanced.sample(5, random_state=42))
+        print("\nSample rows from disease_train_balanced:")
+        print(disease_train_balanced.sample(5, random_state=42))
 
-    # print("\nSample rows from disease_test_balanced:")
-    # print(disease_test_balanced.sample(5, random_state=42))
+        print("\nSample rows from disease_test_balanced:")
+        print(disease_test_balanced.sample(5, random_state=42))
 
     return disease_type_train, disease_type_test
 
@@ -302,7 +303,7 @@ if __name__ == "__main__":
     # csv file containing [Path, Label] for each normalized image
     csv_file = 'Normalized_Image_Paths.csv'
    
-    # Split the data into training and testing (80-20) while maintaining balanced classes
+    # Split the data into training and testing (90-10) while maintaining balanced classes
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters

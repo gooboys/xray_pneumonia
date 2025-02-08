@@ -36,7 +36,7 @@ def train_test_split(file_path,test_size):
         for label in data['Labels'].unique()
     ])
 
-    # Split the balanced data into training and testing sets with an 80-20 split
+    # Split the balanced data into training and testing sets with a split based on test-size
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
     # Copying data for disease present split
@@ -52,30 +52,6 @@ def train_test_split(file_path,test_size):
     print("Training set (disease type) class distribution:\n", train_data['Labels'].value_counts(normalize=True))
     print("Testing set (disease type) class distribution:\n", test_data['Labels'].value_counts(normalize=True))
     return train_data, test_data
-
-    # Turning both disease cases into one class
-    disease_train['Labels'] = disease_train['Labels'].apply(lambda x: 1 if x == 2 else x)
-    disease_test['Labels'] = disease_test['Labels'].apply(lambda x: 1 if x == 2 else x)
-
-    # Check the label distribution
-    disease_train_min = disease_train['Labels'].value_counts().min()
-    disease_test_min = disease_test['Labels'].value_counts().min()
-    
-    # Create a balanced sample for each label to achieve roughly 50% of each label in train and test sets for if disease is present
-    disease_train_balanced = pd.concat([
-        disease_train[disease_train['Labels'] == label].sample(disease_train_min, random_state=42)
-        for label in disease_train['Labels'].unique()
-    ])
-    disease_test_balanced = pd.concat([
-        disease_test[disease_test['Labels'] == label].sample(disease_test_min, random_state=42)
-        for label in disease_test['Labels'].unique()
-    ])
-
-    # Verify the class balance
-    print("Training set (disease type) class distribution:\n", disease_train_balanced['Labels'].value_counts(normalize=True))
-    print("Testing set (disease type) class distribution:\n", disease_test_balanced['Labels'].value_counts(normalize=True))
-    return disease_train_balanced, disease_test_balanced
-
     
 
 # Define the custom Dataset class to handle image loading
@@ -286,7 +262,7 @@ if __name__ == "__main__":
      # csv file containing [Path, Label] for each normalized image
     csv_file = 'Normalized_Image_Paths.csv'
    
-    # Split the data into training and testing (80-20) while maintaining balanced classes
+    # Split the data into training and testing (90-10) while maintaining balanced classes
     train_data, test_data = train_test_split(csv_file, 0.1)
    
     # Initialize hyperparameters

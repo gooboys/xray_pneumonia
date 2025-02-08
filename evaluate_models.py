@@ -29,7 +29,7 @@ def train_test_split(file_path,test_size, print = False):
         for label in data['Labels'].unique()
     ])
 
-    # Split the balanced data into training and testing sets with an 80-20 split
+    # Split the balanced data into training and testing sets with a split based on test_size
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
     # Copying data for disease type split, removing non-infected cases
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # Data preparation is univeral for all testing:
     # csv file containing [Path, Label] for each normalized image
     csv_file = 'Normalized_Image_Paths.csv'
-    # Split the data into training and testing (80-20) while maintaining balanced classes
+    # Split the data into training and testing (90-10) while maintaining balanced classes
     train_data, test_data, a, b = train_test_split(csv_file, 0.1)
     val_dataset = ImageDataset(test_data, transform=transform)
     val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)

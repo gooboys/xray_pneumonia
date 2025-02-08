@@ -3,6 +3,12 @@ import pandas as pd
 import os
 from PIL import Image
 
+'''
+This files does the preprocessing for the files. Since the images are in greyscale it performs brightness normalization,
+contrast normalization, and image size normalization. The images can be normalized to whatever size. Originally they were
+256x256 when the model was not broken up into twow binary classifications. However, they were resized to 224x224 for 
+transfer learning models. The image size normalization uses black barring so it doesn't distort image dimensions.
+'''
 
 def normalize_brightness(image, target_brightness):
     """

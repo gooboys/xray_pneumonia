@@ -38,9 +38,6 @@ Bayesian_optimization.py:
 Bayesian_threshhold.py:
     This file was another bayesian optimization using the parameters learning rate, dropout, and threshhold rate for model classifications. This did not end up yielding any valuable results.
 
-one_node.py:
-    This file was used to experiment with the models seeing if there was a discernable differnce when the output layer had one node rather than two for binary classification. The difference was negligible and it was decided to remain working on models with a two node output layer
-
 camtest.py:
     This file can be used to directly generate Class Activation Maps (CAMs) from model type and model number. This file was used to test the efficacy of the CAM model.
 
@@ -53,4 +50,4 @@ evaluate_models.py:
 infection_type.py:
     This file was used to test various binary classification of disease types before threshholding, L2-regularization, and many other techniques were utilized.
 
-Other files which were not included in this repo, but can be found in container branch. They include the preprocessing for RGB images, tests for RGB images, various models with a single output layer, and other models with slight variations from those existing in the models folder. However the models folder contains pretty much all of the models which were experimented on.
+Other files which were not included in this repo, but can be found in container branch. They include the preprocessing for RGB images, tests for RGB images, various models with a single output layer, the experiments for models with a singular layer, and other models with slight variations from those existing in the models folder. However the models folder contains pretty much all of the models which were experimented on.

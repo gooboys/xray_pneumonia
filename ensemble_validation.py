@@ -32,7 +32,7 @@ def train_test_split(file_path,test_size):
         for label in data['Labels'].unique()
     ])
 
-    # Split the balanced data into training and testing sets with an 80-20 split
+    # Split the balanced data into training and testing sets with a split determined by test_size
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
     return train_data, test_data
 
@@ -154,6 +154,7 @@ if __name__ == "__main__":
 
     test_data, train_data = train_test_split(file_path, 0.1)
 
+    # Different models are placed on different lines that way they can each be commented out to see where their strengths lie.
     model_paths = {
         'infection_present_models': ['TrainedModels/standard1.pth','TrainedModels/standard2.pth','TrainedModels/standard3.pth',
                                      'TrainedModels/standard4.pth','TrainedModels/standard5.pth'],
@@ -170,6 +171,7 @@ if __name__ == "__main__":
         'TrainedModels/denseB51.pth': denseB5,'TrainedModels/denseB52.pth': denseB5,'TrainedModels/denseB53.pth': denseB5,'TrainedModels/denseB54.pth': denseB5
     }
 
+    # Tests the entire ensemble model on different threshholds.
     validate_models(train_data, model_paths, model_types, 0.5)
     validate_models(train_data, model_paths, model_types, 0.51)
     validate_models(train_data, model_paths, model_types, 0.52)

@@ -344,31 +344,3 @@ if __name__ == "__main__":
         file.write('denseB5:\n')  # Write the model name
         file.write(f'Best Hyperparameters: {study2.best_params}\n')  # Write best parameters
         file.write(f'Best ROC-AUC Score: {study2.best_value}\n\n')  # Write best score
-
-    # # Initialize hyperparameters
-    # num_splits = 3
-    # train_size = 0.9
-    # num_epochs = 2
-    # batch_size = 16
-    
-    # # Initialize other parameters
-    # criterion = nn.CrossEntropyLoss()
-    # optimizer_class = torch.optim.Adam
-    # limit = 3
-
-    # datapath = 'Normalized_Image_Paths.csv'
-    # specs = {
-    #     'criterion': criterion,
-    #     'optimizer': optimizer_class,
-    #     'splits': num_splits,
-    #     'train_size': train_size,
-    #     'num_epochs': num_epochs,
-    #     'batch_size': batch_size,
-    #     'device': device,
-    #     'transform': transform,
-    #     'limit': limit
-    # }
-    
-    # montecarlo(eff4, datapath, specs, 0.55, 0.001)
-
-    

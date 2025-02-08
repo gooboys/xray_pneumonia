@@ -238,6 +238,7 @@ def objective(trial, model_class):
     return roc_auc  # Maximize ROC-AUC
 
 if __name__ == "__main__":
+    # BELOW ARE THE TRIALS TESTING FOR LEARNING RATE, DROPOUT, AND BATCH SIZE
     # study_a = optuna.create_study(direction="maximize")
     # study_a.optimize(lambda trial: objective(trial, model_class=eff3), n_trials=50)
     # with open('bayes.txt', 'w') as file:
@@ -265,17 +266,3 @@ if __name__ == "__main__":
         file.write('denseB5:\n')  # Write the model name
         file.write(f'Best Hyperparameters: {study_d.best_params}\n')  # Write best parameters
         file.write(f'Best ROC-AUC Score: {study_d.best_value}\n\n')  # Write best score
-
-    # # Save results to file
-    # studies = {
-    #     "EFF3": study_a,
-    #     "EFF4": study_b,
-    #     "DenseA3": study_c,
-    #     "DenseB5": study_d,
-    # }
-
-    # with open('bayes.txt', 'w') as file:
-    #     for label, study in studies.items():
-    #         file.write(f'{label}:\n')  # Write the model name
-    #         file.write(f'Best Hyperparameters: {study.best_params}\n')  # Write best parameters
-    #         file.write(f'Best ROC-AUC Score: {study.best_value}\n\n')  # Write best score

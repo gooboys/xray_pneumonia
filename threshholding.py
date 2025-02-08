@@ -18,9 +18,6 @@ from models import (
     mobileV21, mobileV22, mobileV23, mobileV24, mobileV25,
     mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
 )
-from expModels import (
-    tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21, tDenseA31, teff41, teff42, teff43
-)
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -333,7 +330,6 @@ def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plo
 
 if __name__ == "__main__":
     # csv file containing [Path, Label] for each normalized image
-    # csv_file = 'infection_type_labels.csv'
     csv_file = 'Normalized_Image_Paths.csv'
 
     # Split the data into training and testing (80-20) while maintaining balanced classes
@@ -344,31 +340,67 @@ if __name__ == "__main__":
     train_size = 0.9
     num_epochs = 12
 
+    optimizer_class = torch.optim.Adam
+    limit = 4
+    txt_file = "temp2.txt"
+
     # denseB5
-    # learn = 0.0004355666381799594
-    # threshholds = [0.5]
-    # dropout = 0.3488616602654536
-    # model_names = ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth']
-    # batch_size = 16
-    # # Initialize other parameters
-    # smoothing = 0.038
-    # criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
-    # optimizer_class = torch.optim.Adam
-    # limit = 4
-    # txt_file = "temp2.txt"
+    B5_learn = 0.0004355666381799594
+    B5_dropout = 0.3488616602654536
+    B5_model_names = ['TrainedModels/denseB51.pth','TrainedModels/denseB52.pth','TrainedModels/denseB53.pth','TrainedModels/denseB54.pth']
+    B5_batch_size = 16
+    # Initialize other parameters
+    B5_smoothing = 0.038
+    B5_criterion = nn.CrossEntropyLoss(label_smoothing=B5_smoothing)
+    # List of model objects
+    B5_models = [denseB5]
+    # List of model names as strings
+    B5_modelnames = ['denseB5']
+
+    B5_models_and_names = zip(B5_models,B5_modelnames)
+
+    B5_data = {'train_data': train_data, 'test_data': test_data}
+    B5_specs = {
+        'criterion': B5_criterion,
+        'optimizer': optimizer_class,
+        'splits': num_splits,
+        'train_size': train_size,
+        'num_epochs': num_epochs,
+        'batch_size': B5_batch_size,
+        'device': device,
+        'transform': transform,
+        'limit': limit
+    }
+
 
     # denseA3
-    # learn = 0.000420675036631029
-    # threshholds = [0.5]
-    # dropout = 0.6196310613745626
-    # model_names = ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth']
-    # batch_size = 16
-    # # Initialize other parameters
-    # smoothing = 0.038
-    # criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
-    # optimizer_class = torch.optim.Adam
-    # limit = 4
-    # txt_file = "temp2.txt"
+    A3_learn = 0.000420675036631029
+    A3_dropout = 0.6196310613745626
+    A3_model_names = ['TrainedModels/denseA31.pth','TrainedModels/denseA32.pth','TrainedModels/denseA33.pth','TrainedModels/denseA34.pth']
+    A3_batch_size = 16
+    # Initialize other parameters
+    A3_smoothing = 0.038
+    A3_criterion = nn.CrossEntropyLoss(label_smoothing=A3_smoothing)
+    # List of model objects
+    A3_models = [denseA3]
+    # List of model names as strings
+    A3_modelnames = ['denseA3']
+
+    A3_models_and_names = zip(A3_models,A3_modelnames)
+
+    A3_data = {'train_data': train_data, 'test_data': test_data}
+    A3_specs = {
+        'criterion': A3_criterion,
+        'optimizer': optimizer_class,
+        'splits': num_splits,
+        'train_size': train_size,
+        'num_epochs': num_epochs,
+        'batch_size': A3_batch_size,
+        'device': device,
+        'transform': transform,
+        'limit': limit
+    }
+
 
     # eff4
     learn =  0.0009736960816122808
@@ -379,15 +411,8 @@ if __name__ == "__main__":
     # Initialize other parameters
     smoothing = 0.04
     criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
-    optimizer_class = torch.optim.Adam
-    limit = 4
-    txt_file = "temp2.txt"
-
-
-
     # List of model objects
     models = [eff4]
-
     # List of model names as strings
     modelnames = ['eff4']
 
@@ -407,9 +432,38 @@ if __name__ == "__main__":
         'limit': limit
     }
 
+    # Runs training for B5 models
+    for model, name in B5_models_and_names:
+        for threshold in threshholds:
+            report, ROC_score = montecarlo(model, B5_data, B5_specs, threshold, B5_learn, dropout=B5_dropout, save_models=B5_model_names)
+            # with open(txt_file, "a") as file:
+            #     file.write(name + ":\n")
+            #     file.write('threshhold: ' + str(threshold) + ":\n")
+            #     file.write('dropout: '+ str(dropout) + ":\n")
+            #     file.write('lr: ' + str(learn) + ":\n")
+            #     file.write('smoothing: ' + str(smoothing) + ":\n")
+            #     file.write(report)
+            #     file.write(f"ROC Score: {ROC_score}")
+            #     file.write("\n")
+    
+    # Runs training for A3 models
     for model, name in models_and_names:
         for threshold in threshholds:
-            report, ROC_score = montecarlo(model, data, specs, threshold, learn, dropout=dropout, save_models=model_names) #5007265217094025
+            report, ROC_score = montecarlo(model, A3_data, A3_specs, threshold, A3_learn, dropout=A3_dropout, save_models=A3_model_names)
+            # with open(txt_file, "a") as file:
+            #     file.write(name + ":\n")
+            #     file.write('threshhold: ' + str(threshold) + ":\n")
+            #     file.write('dropout: '+ str(dropout) + ":\n")
+            #     file.write('lr: ' + str(learn) + ":\n")
+            #     file.write('smoothing: ' + str(smoothing) + ":\n")
+            #     file.write(report)
+            #     file.write(f"ROC Score: {ROC_score}")
+            #     file.write("\n")
+    
+    # Runs training for eff4 models
+    for model, name in models_and_names:
+        for threshold in threshholds:
+            report, ROC_score = montecarlo(model, data, specs, threshold, learn, dropout=dropout, save_models=model_names)
             # with open(txt_file, "a") as file:
             #     file.write(name + ":\n")
             #     file.write('threshhold: ' + str(threshold) + ":\n")

@@ -17,9 +17,6 @@ from models import (
     mobileV21, mobileV22, mobileV23, mobileV24, mobileV25,
     mobileV31, mobileV32, mobileV33, mobileV34, mobileV35
 )
-from expModels import (
-    tDenseA3, tDenseA5, tDenseB4, teff4, teff5, tMobileV21, tDenseA31, teff41, teff42, teff43
-)
 
 transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
@@ -321,8 +318,6 @@ if __name__ == "__main__":
 
     txt_file = "xModels.txt"
 
-    # NOTE: Models with flexible dropout rates do not work here
-
     # List of model objects
     models = [
         denseA3
@@ -332,15 +327,13 @@ if __name__ == "__main__":
     model_names = [
         'denseA3'
     ]
-    # models = [denseA5]
-    # model_names = ["denseA5"]
 
     models_and_names = zip(models,model_names)
     
     for model, name in models_and_names:
         report, ROC_score = montecarlo(model, train_data, test_data, criterion, optimizer_class, num_splits, train_size, num_epochs, batch_size, device, transform, limit)
-        # with open(txt_file, "a") as file:
-        #     file.write(name + ":\n")
-        #     file.write(report)
-        #     file.write(f"ROC Score: {ROC_score}")
-        #     file.write("\n")
+        with open(txt_file, "a") as file:
+            file.write(name + ":\n")
+            file.write(report)
+            file.write(f"ROC Score: {ROC_score}")
+            file.write("\n")

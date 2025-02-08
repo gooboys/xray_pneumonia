@@ -72,7 +72,7 @@ model_types = {
 }
 '''
 
-def validate_models(validation_set, model_paths, model_types, threshhold = 0.5, graphs=True):
+def validate_models(validation_set, model_paths, model_types, threshhold = 0.5):
     # Extract lists for both ensemble stages
     present_model_paths = model_paths['infection_present_models']
     type_model_paths = model_paths['infection_type_models']

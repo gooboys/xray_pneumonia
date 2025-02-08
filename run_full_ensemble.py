@@ -11,6 +11,10 @@ from models import standardCNN
 import cv2
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+'''
+This file runs the ensemble model for the 
+'''
+
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transform = transforms.ToTensor()

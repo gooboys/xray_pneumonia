@@ -8,6 +8,8 @@ Several of the files present in main branch do not need to be run for the progra
 
 There are two models and two containers (one for each). The first model is a bagging model of a singular deep neural network structure. This performs classification of the three classes. The second model is also an ensemble combining two binary classifications. This model performs slightly better, it uses the same deep learning model for the disease presence classification (except the output layer is 2 nodes rather than 3) and leverages 3 different transfer learning models for the disease type classification.
 
+There are three transfer learning models, they are referred to as denseA3, denseB5, and eff4 in the code. The denseA3 model uses the densenet-121 architecture, the denseB5 uses the densenet-169 architecture, and the eff4 model uses the efficientnet-B0 architecture.
+
 To run the entire program run in this order:
 1. analysis.py:
     Run this to see the analysis of the data, optional and the remaining code can run without this process.

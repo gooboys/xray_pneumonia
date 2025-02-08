@@ -2,6 +2,11 @@ import torch
 from torchvision import transforms
 from ensemble_model import run_model, CNN
 
+'''
+This file runs the ensemble model for the dual-binary classification. Please check the order of files which need
+to be run in the README.md file for this container to work.
+'''
+
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

@@ -5,13 +5,17 @@ from ensemble_model import run_model, CNN
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+performance_report = '''
+'''
+
 def show_menu():
     print("===========================================")
     print("    Basic pneumonia disease state model    ")
     print("By: Thierry Juang, James Couch, Saha Udassi")
     print("===========================================")
     print("1. Run model prediction on CT Scan")
-    print("2. Exit the program")
+    print("2. View performance report of the model")
+    print("3. Exit the program")
     print("===========================================")
     return
 
@@ -55,6 +59,11 @@ if __name__ == "__main__":
         choice = input("Enter your choice (1-2): ").strip()
         if choice == "1":
             run_it(ensemble)
-        if choice == "2":
+        elif choice == "2":
+            print(performance_report)
+            input("Press any button to return to the menu.")
+        elif choice == "3":
             print("Thanks for using our model!")
             run = False
+        else:
+            input("That was not a valid input, please press any button to return to the menu.")

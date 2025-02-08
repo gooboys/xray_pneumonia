@@ -117,7 +117,7 @@ Files in the `container` branch include:
 - Alternative **ensemble configurations**.
 - Other variations not included in `main`.
 
-The `models` folder in `main` contains most of the **finalized and near-final models**.
+The `camModels` folder in `main` contains the **finalized models**. The only finalized model not in `camModels` is `standardCNN.py`. 
 
 ---
 

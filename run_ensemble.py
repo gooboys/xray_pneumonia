@@ -10,8 +10,51 @@ to be run in the README.md file for this container to work.
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-performance_report = '''
-'''
+performance_report = """
+Deep Neural Network Ensembled Pneumonia Classification Model Report
+----------------------------------------------------
+Dataset: Pneumonia Diagnosis (Normal vs. Bacterial vs. Viral)
+
+Confusion Matrix:
+-----------------
+       Predicted
+         NORMAL  BACTERIA  VIRUS
+      --------------------------------
+  NORMAL   |  282     5     11
+BACTERIA   |    8   229     62
+   VIRUS   |   22    76    201
+
+Classification Report:
+----------------------
+              Precision    Recall  F1-Score   Support
+------------------------------------------------------
+     NORMAL     0.90       0.95      0.92       298
+   BACTERIA     0.74       0.77      0.75       299
+      VIRUS     0.73       0.67      0.70       299
+
+Overall Model Performance:
+--------------------------
+- Accuracy: **79.00%**
+- Macro Avg: Precision = 0.79, Recall = 0.79, F1-Score = 0.79
+- Weighted Avg: Precision = 0.79, Recall = 0.79, F1-Score = 0.79
+- AUC-ROC Score: **0.9249**
+
+Summary:
+--------
+The full ensembled pneumonia classification model achieves **79.00% accuracy**, 
+effectively distinguishing between **Normal, Bacterial, and Viral pneumonia cases**.
+
+- **Normal cases** exhibit the highest precision (**90%**) and recall (**95%**), 
+  meaning most non-infected cases are correctly identified.
+- **Bacterial pneumonia** shows a **77% recall**, capturing most bacterial cases 
+  while maintaining **74% precision**.
+- **Viral pneumonia** has the lowest recall (**67%**), meaning some viral cases 
+  are misclassified as bacterial, but maintains **73% precision**.
+
+With an **AUC-ROC score of 0.9249**, the model demonstrates **strong overall 
+discrimination capability** between classes. Further threshold tuning may 
+optimize the balance between precision and recall for different pneumonia types.
+"""
 
 def show_menu():
     print("===========================================")

@@ -23,7 +23,10 @@ transform = transforms.ToTensor()  # Convert images to PyTorch tensors
 # Check if a GPU is available and set the device accordingly
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
+'''
+Previous train_test_split file used for file where bacterial and viral classes were already relabeled. 
+Now unused in order to prevent dataleaks in the entire ensemble model.
+'''
 def train_test_split(file_path,test_size):
     # Load the data
     data = pd.read_csv(file_path)
@@ -38,7 +41,7 @@ def train_test_split(file_path,test_size):
         for label in data['Labels'].unique()
     ])
 
-    # Split the balanced data into training and testing sets with an 80-20 split
+    # Split the balanced data into training and testing sets with a split determined by test_size variable
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
     # Verify the class balance
@@ -47,6 +50,9 @@ def train_test_split(file_path,test_size):
 
     return train_data, test_data
 
+'''
+Current test/training split used. Used in order to ensure no data leaks when validating performance of full ensemble model.
+'''
 def train_test_split1(file_path,test_size):
     # Load the data
     data = pd.read_csv(file_path)
@@ -61,14 +67,14 @@ def train_test_split1(file_path,test_size):
         for label in data['Labels'].unique()
     ])
 
-    # Split the balanced data into training and testing sets with an 80-20 split
+    # Split the balanced data into training and testing sets with a split determined by test_size variable
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
-
+    # Copies all data with the exception of no infection cases (Class 0)
     train_data = train_data[train_data['Labels'] != 0].copy()
     test_data = test_data[test_data['Labels'] != 0].copy()
 
-
+    # Turns the labels of bacterial from 1->0 and 2->0 for viral
     label_mapping = {1:0,2:1}
     train_data['Labels'] = train_data['Labels'].map(label_mapping)
     test_data['Labels'] = test_data['Labels'].map(label_mapping)
@@ -111,6 +117,7 @@ specs = {
     'transform': transform,
     'limit': limit
 }
+Ensure the num_splits variable has the same length as the list save_models. There is no code to catch this error.
 '''
 def montecarlo(model_class, data, specs, custom_threshold, learn, dropout=0, plot=False, save_models = False):
     train_data = data['train_data']

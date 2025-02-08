@@ -38,7 +38,7 @@ def train_test_split(file_path,test_size):
         for label in data['Labels'].unique()
     ])
 
-    # Split the balanced data into training and testing sets with an 80-20 split
+    # Split the balanced data into training and testing sets with a split determined by test_size
     train_data, test_data = sk_train_test_split(data_balanced, test_size=test_size, stratify=data_balanced['Labels'], random_state=42)
 
     # Copying data for disease type split, removing non-infected cases
